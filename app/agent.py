@@ -10,6 +10,14 @@ DEVELOPMENT_INTERVAL = 30 # seconds
 PRODUCTION_INTERVAL = 900 # 15 minutes
 CURRENT_INTERVAL = DEVELOPMENT_INTERVAL
 
+state = {
+    "workerRunning": False,
+    "lastCycleAt": None,
+    "nextCycleAt": None,
+    "cyclesCompleted": 0,
+    "lastError": None
+}
+
 def is_semantic_duplicate(new_title, recent_topics):
     new_words = set(new_title.lower().split())
     for t in recent_topics:
@@ -27,7 +35,13 @@ async def autonomous_loop(agent_id: str):
     logger.info(f"Agent initialized")
     logger.info(f"Autonomous worker started for agent {agent_id}")
     
+    state["workerRunning"] = True
+    
     while True:
+        cycle_start_time = datetime.now(timezone.utc)
+        state["lastCycleAt"] = cycle_start_time.isoformat()
+        state["nextCycleAt"] = None
+        
         try:
             db = SessionLocal()
             logger.info("Starting discovery cycle")
@@ -130,9 +144,15 @@ async def autonomous_loop(agent_id: str):
                     logger.exception(f"Error processing topic '{t.get('title')}': {e}")
                 
             logger.info("Cycle complete")
+            state["cyclesCompleted"] += 1
+            state["lastError"] = None
             db.close()
             
         except Exception as e:
             logger.exception("Autonomous cycle failed")
+            state["lastError"] = str(e)
+            state["workerRunning"] = False
             
+        next_cycle = datetime.now(timezone.utc).timestamp() + CURRENT_INTERVAL
+        state["nextCycleAt"] = datetime.fromtimestamp(next_cycle, tz=timezone.utc).isoformat()
         await asyncio.sleep(CURRENT_INTERVAL)
