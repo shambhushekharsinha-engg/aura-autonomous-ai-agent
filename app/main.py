@@ -62,7 +62,12 @@ async def init_agent(req: schemas.InitRequest, db: Session = Depends(database.ge
             domain=req.persona.domain
         )
         db.add(db_agent)
-        db.commit()
+    else:
+        # Update existing agent persona based on the init request
+        db_agent.name = req.persona.name
+        db_agent.domain = req.persona.domain
+        
+    db.commit()
         
     # Start the autonomous loop if it's not already running
     import os
@@ -79,7 +84,7 @@ def get_feed(agentId: str, db: Session = Depends(database.get_db)):
     if not db_agent:
         raise HTTPException(status_code=404, detail="Agent not found")
         
-    posts = db.query(models.Post).filter(models.Post.agent_id == agentId).order_by(models.Post.created_at.desc()).limit(20).all()
+    posts = db.query(models.Post).filter(models.Post.agent_id == agentId).order_by(models.Post.created_at.desc()).all()
     
     feed_posts = []
     for p in posts:

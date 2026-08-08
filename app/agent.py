@@ -90,7 +90,7 @@ async def autonomous_loop(agent_id: str):
                         evaluation.get('persona_fit', 0) * 0.10
                     )
                     
-                    decision = evaluation.get("decision", "reject").upper()
+                    decision = "PUBLISH" if overall_score >= 70 else "REJECT"
                     
                     db_topic = models.Topic(
                         id=t["id"],
@@ -156,7 +156,6 @@ async def autonomous_loop(agent_id: str):
         except Exception as e:
             logger.exception("Autonomous cycle failed")
             state["lastError"] = str(e)
-            state["workerRunning"] = False
             
         next_cycle = datetime.now(timezone.utc).timestamp() + CURRENT_INTERVAL
         state["nextCycleAt"] = datetime.fromtimestamp(next_cycle, tz=timezone.utc).isoformat()

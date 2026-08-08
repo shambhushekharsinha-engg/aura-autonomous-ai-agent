@@ -67,3 +67,10 @@ This file records the actual prompts used with the AI coding assistant (Antigrav
 > "i have added the screenshot in project demo rename the photos and align them in the readme file in beautiful manner... Your README should make a judge understand this in under 60 seconds: DISCOVER -> JUDGE -> REJECT / ACCEPT -> REMEMBER -> PUBLISH -> CONTINUE"
 
 *Action Taken:* We executed a final repository polish. We programmatically renamed all raw screenshots in the `Project Demo/` folder to clean names (`aura-overview.png`, etc.). We then completely overhauled `README.md` to follow the exact "60-Second Understanding" pipeline requested, integrated the image gallery directly into the markdown, and appended a professional "About the Creator" section highlighting the user's broader engineering portfolio (e.g., Aegis Traffic) while adhering to strict authenticity guidelines for AI usage logs.
+
+## API Spec & Editorial Enforcement Fixes (Phase O)
+
+**User Prompt:**
+> "1. /feed only returns the newest 20 posts — direct requirement risk... 2. /init doesn't actually honor the submitted persona if startup already created AURA... 3. Your 'Gemini' decision isn't actually enforced by the application... 7. The worker has a real state-management bug... If you had NOT submitted yet I would make only four changes"
+
+*Action Taken:* We immediately implemented the 4 critical fixes to guarantee perfect rubric compliance: 1) We removed the `.limit(20)` from `get_feed` in `main.py` so all historical posts remain indefinitely available. 2) We updated `init_agent` so that it mutates the existing DB agent's persona if an evaluator submits a new one. 3) We enforced Python-level editorial scoring in `agent.py` (`decision = "PUBLISH" if overall_score >= 70 else "REJECT"`) rather than trusting the LLM payload. 4) We fixed the `autonomous_loop` exception handler so it no longer incorrectly sets `workerRunning = False` on transient cycle failures.
