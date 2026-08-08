@@ -11,7 +11,20 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-2. Set your `GEMINI_API_KEY` in `.env`
+## Configuration
+Set these environment variables in your `.env` or deployment host:
+```bash
+GEMINI_API_KEY="your-api-key"
+```
+
+### Development / Demo Mode
+AURA includes a deterministic `MOCK_LLM` mode for development and demonstration when external LLM quota is unavailable. To enable it:
+```bash
+MOCK_LLM=1
+```
+When enabled, the autonomous discovery, editorial pipeline, memory, scheduling, and feed mechanisms remain exactly the same. The only difference is that topic evaluation and post generation are handled deterministically to guarantee a publication path during rate-limiting or quota exhaustion.
+
+## Usage
 
 3. Start the server:
 ```bash
