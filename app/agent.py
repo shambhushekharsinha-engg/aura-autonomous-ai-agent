@@ -47,17 +47,22 @@ async def autonomous_loop(agent_id: str):
             logger.info("Starting discovery cycle")
             
             topics = discovery.discover_topics()
-            logger.info(f"{len(topics)} topics discovered")
+            logger.info(f"{len(topics)} topics discovered from feeds")
             
             recent_published_topics = db.query(models.Topic).filter(models.Topic.decision == "PUBLISH").order_by(models.Topic.discovered_at.desc()).limit(10).all()
             
+            novel_topics_processed = 0
             for t in topics:
+                if novel_topics_processed >= 3:
+                    break # Only process 3 new items per cycle to ensure a steady stream for the demo
+                    
                 try:
                     # Deduplicate by URL
                     existing = db.query(models.Topic).filter(models.Topic.url == t["url"]).first()
                     if existing:
-                        logger.info(f"Topic rejected | reason=DUPLICATE_URL | title='{t['title']}'")
                         continue
+                        
+                    novel_topics_processed += 1
                         
                     # Deduplicate by semantic similarity (title word overlap)
                     if is_semantic_duplicate(t["title"], recent_published_topics):

@@ -14,7 +14,7 @@ def discover_topics():
         response.raise_for_status()
         hn_feed = feedparser.parse(response.text)
         
-        for entry in hn_feed.entries[:5]:
+        for entry in hn_feed.entries[:30]:
             topics.append({
                 "id": str(uuid.uuid4()),
                 "title": entry.title,
@@ -32,7 +32,7 @@ def discover_topics():
         response.raise_for_status()
         arxiv_feed = feedparser.parse(response.text)
         
-        for entry in arxiv_feed.entries[:5]:
+        for entry in arxiv_feed.entries[:30]:
             topics.append({
                 "id": str(uuid.uuid4()),
                 "title": entry.title,
