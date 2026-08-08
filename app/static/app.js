@@ -191,7 +191,16 @@ async function fetchData() {
             return;
         }
         
-        if (healthRes.ok) updateHealth(await healthRes.json());
+        if (healthRes.ok) {
+            const health = await healthRes.json();
+            updateHealth(health);
+            // Wake up worker if offline
+            if (!health.workerRunning) {
+                console.log("Worker offline. Waking it up...");
+                initAgent();
+            }
+        }
+        
         if (decRes.ok) renderDecisions((await decRes.json()).decisions);
         if (feedRes.ok) renderFeed((await feedRes.json()).posts);
         

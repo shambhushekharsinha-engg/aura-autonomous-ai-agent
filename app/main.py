@@ -36,9 +36,10 @@ async def init_agent(req: schemas.InitRequest, db: Session = Depends(database.ge
         db.add(db_agent)
         db.commit()
         
-        # Start the autonomous loop only once
-        import os
-        if not os.getenv("TESTING"):
+    # Start the autonomous loop if it's not already running
+    import os
+    if not os.getenv("TESTING"):
+        if not agent.state.get("workerRunning"):
             asyncio.create_task(agent.autonomous_loop(agent_id))
     
     return {"agentId": agent_id}
