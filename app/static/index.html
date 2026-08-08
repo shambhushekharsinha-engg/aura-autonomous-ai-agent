@@ -5,83 +5,155 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AURA - Autonomous AI Research Analyst</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header class="dashboard-header">
-            <div class="header-content">
-                <div class="title-group">
-                    <h1>AURA</h1>
-                    <p class="subtitle">Autonomous AI Research Analyst</p>
-                    <p class="philosophy">"Don't publish what is merely new. Publish what is consequential."</p>
+    <div class="app-container">
+        
+        <!-- Left Sidebar Fixed -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-atom"></i>
                 </div>
+                <div class="brand-text">
+                    <h1>AURA</h1>
+                    <span class="version">v2.0</span>
+                </div>
+            </div>
+
+            <div class="status-box">
                 <div class="status-indicator">
                     <div class="pulse-dot"></div>
                     <span id="statusText">AUTONOMOUS</span>
                 </div>
+                <p id="worker-status" class="online">● Worker Online</p>
+                <div class="cycle-info">
+                    <div class="cycle-item">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Last: <b id="last-cycle-time">--</b></span>
+                    </div>
+                    <div class="cycle-item">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                        <span>Next: <b id="next-cycle-time">--</b></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-menu">
+                <div class="nav-label">VIEWS</div>
+                <button class="nav-btn active" data-tab="feed">
+                    <div class="nav-icon-bg"><i class="fa-solid fa-rss"></i></div>
+                    Research Feed
+                </button>
+                <button class="nav-btn" data-tab="decisions">
+                    <div class="nav-icon-bg purple"><i class="fa-solid fa-gavel"></i></div>
+                    Editorial Judgments
+                </button>
+                <button class="nav-btn" data-tab="persona">
+                    <div class="nav-icon-bg blue"><i class="fa-solid fa-brain"></i></div>
+                    AURA Persona
+                </button>
+            </div>
+
+            <div class="stats-overview">
+                <div class="nav-label">METRICS</div>
+                <div class="stats-grid">
+                    <div class="stat-mini">
+                        <span class="s-label">Discovered</span>
+                        <span class="s-val" id="stat-discovered">0</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="s-label">Published</span>
+                        <span class="s-val text-gradient-green" id="stat-published">0</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="s-label">Rejected</span>
+                        <span class="s-val text-gradient-red" id="stat-rejected">0</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="s-label">Cycles</span>
+                        <span class="s-val" id="cycles-count">0</span>
+                    </div>
+                </div>
             </div>
             
-            <div class="stats-row">
-                <div class="stat-card">
-                    <span class="stat-label">DISCOVERED</span>
-                    <span class="stat-value" id="stat-discovered">0</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">PUBLISHED</span>
-                    <span class="stat-value" id="stat-published">0</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">REJECTED</span>
-                    <span class="stat-value" id="stat-rejected">0</span>
-                </div>
+            <div class="sidebar-footer">
+                <p>"Don't publish what is merely new. Publish what is consequential."</p>
             </div>
-        </header>
+        </aside>
 
-        <main class="dashboard-grid">
-            <div class="sidebar">
-                <section class="activity-section card">
-                    <h3>AUTONOMOUS ACTIVITY</h3>
-                    <div class="activity-details">
-                        <p id="worker-status">● Worker online</p>
-                        <p>Last cycle: <span id="last-cycle-time">--</span></p>
-                        <p>Next cycle: <span id="next-cycle-time">--</span></p>
-                        <p>Cycles: <span id="cycles-count">0</span></p>
+        <!-- Main Content Scrollable -->
+        <main class="main-content">
+            
+            <header class="topbar">
+                <h2 id="current-view-title">Research Feed</h2>
+                <div class="topbar-actions">
+                    <div class="model-badge">
+                        <i class="fa-solid fa-bolt"></i> Gemini 2.0 Flash
                     </div>
-                </section>
+                </div>
+            </header>
+
+            <div class="scroll-container">
                 
-                <section class="persona-section card">
-                    <h3>AURA PERSONA</h3>
-                    <div class="persona-details">
-                        <p><strong>AI Research Analyst</strong></p>
-                        <p>AI + Technology</p>
-                        <hr>
-                        <h4>Editorial Philosophy</h4>
-                        <p>AURA looks for:</p>
-                        <ul>
-                            <li>Technical significance</li>
-                            <li>Evidence quality</li>
-                            <li>Developer impact</li>
-                            <li>Novelty</li>
-                            <li>Long-term relevance</li>
-                        </ul>
+                <!-- TAB: FEED -->
+                <div id="tab-feed" class="tab-content active">
+                    <div id="feed-container" class="feed-grid">
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Awaiting first discovery cycle...</p>
+                        </div>
                     </div>
-                </section>
-
-                <section class="decisions-section card">
-                    <h3>EDITORIAL JUDGMENT</h3>
-                    <div id="decisions-container">
-                        <div class="loading-state">Initializing...</div>
-                    </div>
-                </section>
-            </div>
-
-            <section class="feed-section card">
-                <h2>AUTONOMOUS RESEARCH FEED</h2>
-                <div id="feed-container" class="feed-container">
-                    <div class="loading-state">Initializing AURA...</div>
                 </div>
-            </section>
+
+                <!-- TAB: DECISIONS -->
+                <div id="tab-decisions" class="tab-content">
+                    <div class="decisions-header">
+                        <div class="dh-col">Status</div>
+                        <div class="dh-col">Score</div>
+                        <div class="dh-col dh-topic">Topic</div>
+                        <div class="dh-col">Reason</div>
+                    </div>
+                    <div id="decisions-container" class="decisions-list">
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Loading decisions...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: PERSONA -->
+                <div id="tab-persona" class="tab-content">
+                    <div class="persona-card">
+                        <div class="p-header">
+                            <div class="p-avatar"><i class="fa-solid fa-robot"></i></div>
+                            <div class="p-title">
+                                <h3>AI Research Analyst</h3>
+                                <span>Core Identity</span>
+                            </div>
+                        </div>
+                        <div class="p-body">
+                            <div class="p-section">
+                                <h4>Domain</h4>
+                                <p>AI + Technology</p>
+                            </div>
+                            <div class="p-section">
+                                <h4>Editorial Philosophy</h4>
+                                <ul>
+                                    <li><i class="fa-solid fa-check"></i> Technical significance over hype</li>
+                                    <li><i class="fa-solid fa-check"></i> Measurable evidence required</li>
+                                    <li><i class="fa-solid fa-check"></i> High developer impact</li>
+                                    <li><i class="fa-solid fa-check"></i> Genuine novelty vs incremental bumps</li>
+                                    <li><i class="fa-solid fa-check"></i> Long-term architectural relevance</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </main>
     </div>
     
