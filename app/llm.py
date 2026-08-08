@@ -24,6 +24,12 @@ AURA_PERSONA = {
 }
 
 def evaluate_topic(topic):
+    if os.getenv("MOCK_LLM") == "1":
+        return {
+            "decision": "PUBLISH",
+            "impact": 85, "novelty": 80, "evidence": 90, "relevance": 75, "developer_value": 85, "persona_fit": 90,
+            "reason": "MOCK_PUBLISH"
+        }
     prompt = f"""You are {AURA_PERSONA['name']}, {AURA_PERSONA['role']}.
 Domain: {AURA_PERSONA['domain']}
 Interests: {', '.join(AURA_PERSONA['interests'])}
@@ -74,6 +80,12 @@ Respond ONLY with the JSON. Do not include markdown formatting or backticks.
         }
 
 def generate_post(topic, previous_posts):
+    if os.getenv("MOCK_LLM") == "1":
+        return {
+            "text": f"Mock generated post for: {topic['title']}. This proves the happy path pipeline works perfectly.",
+            "rationale": "Mock rationale: this topic was selected deterministically to demonstrate the publication flow.",
+            "stance": "AURA explicitly believes in proving deterministic paths."
+        }
     context = ""
     if previous_posts:
         context = "These are AURA's previous publications and stances. Do not repeat them. If the new development changes or challenges a previous position, explicitly build continuity:\n"
