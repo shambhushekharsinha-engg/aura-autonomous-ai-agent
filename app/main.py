@@ -19,6 +19,11 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 def read_index():
     return FileResponse('app/static/index.html')
 
+def start_agent_loop(agent_id: str):
+    new_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(new_loop)
+    new_loop.run_until_complete(agent.autonomous_loop(agent_id))
+
 @app.post("/api/agent/init", response_model=schemas.InitResponse)
 def init_agent(req: schemas.InitRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     # Create the agent in DB
@@ -31,8 +36,10 @@ def init_agent(req: schemas.InitRequest, background_tasks: BackgroundTasks, db: 
     db.add(db_agent)
     db.commit()
     
-    # Start the autonomous loop in the background
-    asyncio.create_task(agent.autonomous_loop(agent_id))
+    # Start the autonomous loop in the background unless testing
+    import os
+    if not os.getenv("TESTING"):
+        background_tasks.add_task(start_agent_loop, agent_id)
     
     return {"agentId": agent_id}
 
