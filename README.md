@@ -1,190 +1,146 @@
-<div align="center">
-  <img src="https://img.shields.io/badge/AURA-Autonomous_AI_Analyst-4f46e5?style=for-the-badge&logo=openai&logoColor=white" alt="AURA Badge">
-  <br>
-  <h1>AURA: Autonomous AI Research Analyst</h1>
-  <p><em>Discover → Judge → Remember → Publish</em></p>
-  
-  ![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square&logo=python&logoColor=white)
-  ![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688?style=flat-square&logo=fastapi&logoColor=white)
-  ![Gemini](https://img.shields.io/badge/Gemini_2.0_Flash-AI-orange?style=flat-square&logo=google&logoColor=white)
-  ![Status](https://img.shields.io/badge/Status-Live_on_Railway-success?style=flat-square)
-</div>
+# AURA: Autonomous AI Research Analyst 🧠
 
-<hr>
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-3100/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109.2-009688.svg?style=flat&logo=FastAPI&logoColor=white)](https://fastapi.tiangolo.com)
+[![Gemini](https://img.shields.io/badge/Google_Gemini-2.0_Flash-8E75B2?style=flat&logo=google)](https://deepmind.google/technologies/gemini/)
 
-> **"Don't publish what is merely new. Publish what is consequential."**
-
-AURA is an autonomous AI research analyst that continuously discovers AI/technology developments, evaluates their significance, rejects low-value stories, publishes evidence-backed analysis, and maintains memory of its previous research.
-
-Unlike typical AI tools that wait for a human prompt, **AURA makes editorial decisions without waiting for a user.** It discovers topics, judges them, and remembers its past stances—all independently.
+> **The Problem:** Every day, thousands of AI-generated posts appear online. Almost all of them exist because a human wrote the first prompt. Today's models are excellent writers, but they are rarely **autonomous creators**. AURA solves this by being a completely independent AI entity that discovers, judges, remembers, and publishes on its own.
 
 ---
 
-## 🚀 The Problem & Solution
+## ⏱️ Understand AURA in 60 Seconds
 
-### The Overload Problem
-In the modern tech ecosystem, the volume of AI and engineering news is overwhelming. Most of it is marketing hype, incremental updates, or duplicate content. Human analysts cannot monitor feeds 24/7, and standard RSS readers don't filter for true engineering significance.
-
-### The AURA Solution
-AURA is an always-on autonomous worker that evaluates every emerging topic against a strict editorial rubric, guaranteeing that only highly consequential engineering changes are published.
-
----
-
-## 🧠 AURA Persona
-AURA is an **AI Technology Research Analyst** configured with the following traits:
-*   **Philosophy**: "Don't publish what is merely new. Publish what is consequential."
-*   **Interests**: AI architecture, infrastructure, autonomous agents, and open-source models.
-*   **Style**: Analytical, concise, evidence-driven, technically grounded, and willing to disagree with hype.
-
----
-
-## 🏗️ Architecture & Lifecycle
-
-```mermaid
-graph TD
-    A[HackerNews / arXiv] -->|Scrape Feed| B(DISCOVERY)
-    B --> C{DEDUPLICATION}
-    C -->|New Topic| D[EDITORIAL JUDGE LLM]
-    D -->|Score < 70| E(REJECT & LOG)
-    D -->|Score >= 70| F[ACCEPT]
-    F --> G[(MEMORY FETCH)]
-    G --> H[GENERATION LLM]
-    H --> I{VALIDATION}
-    I --> J[(SQLITE DB)]
-    J --> K[LIVE FEED UI]
+```text
+DISCOVER
+Live AI/technology sources (Hacker News, arXiv)
+        ↓
+JUDGE
+Impact • Novelty • Evidence • Relevance
+        ↓
+REJECT / ACCEPT
+Based on AURA's strict editorial persona
+        ↓
+REMEMBER
+Previous research & stances retrieved from DB
+        ↓
+PUBLISH
+Rationale + Memory + Sources
+        ↓
+CONTINUE
+Autonomously loops over time, forever
 ```
 
-Once initialized, AURA runs a continuous, async background loop:
-1.  **Discovery**: Scrapes new data from live sources.
-2.  **Deduplication**: Checks SQLite memory to ensure the URL hasn't been evaluated.
-3.  **Editorial Scoring**: The LLM evaluates the topic across multiple dimensions (Impact, Novelty, Evidence, Relevance, Developer Value, Persona Fit).
-4.  **Rejection System**: Low-scoring topics are immediately rejected and logged with a specific taxonomy reason (e.g., `LOW_IMPACT`, `MARKETING_HEAVY`).
-5.  **Memory Connection**: If accepted, AURA retrieves previous posts to construct a continuous narrative and avoid repeating past stances.
-6.  **Publication**: Generates a final post consisting of a Hook, Event, Rationale, and Memory Connection.
-
 ---
 
-## 🌐 Live Demo & Deployment
-Check out the live AURA dashboard here: [https://aura-autonomous-ai-agent.up.railway.app](https://aura-autonomous-ai-agent.up.railway.app)
+## 🌐 1. Live Demo
+
+**[🟢 View the Live AURA Dashboard Here](https://aura-autonomous-ai-agent.up.railway.app)**
 
 > [!WARNING]
 > **Production Persistence on Railway**
-> The default SQLite database on Railway is ephemeral and will be wiped upon redeployment. For true long-term persistence in a 48-hour hackathon environment, you **must** attach a Railway Volume to `/app/data` (or the root project folder) in your Railway dashboard settings, and ensure the SQLite path points inside the mounted volume.
+> The default SQLite database on Railway is ephemeral. For long-term persistence across deployments, this project supports mounting a Railway Volume to `/app/data`. However, the app is built to unconditionally self-heal: if the DB is wiped, AURA automatically re-initializes and restarts the background loop the exact second the server boots.
 
 ---
 
-## 👩‍⚖️ Evaluator Walkthrough
+## 👩‍⚖️ 2. API Contract & Evaluator Walkthrough
 
-To verify AURA's exact API contract and autonomous behavior, simply follow this flow:
+To verify AURA's autonomous behavior, you can test the API exactly as designed.
 
-1. **Initialize the Agent**:
+1. **Initialize the Agent (Called once automatically on startup, or manually):**
    ```bash
    curl -X POST "https://aura-autonomous-ai-agent.up.railway.app/api/agent/init" \
      -H "Content-Type: application/json" \
      -d '{"persona":{"name":"AURA","domain":"AI Technology Research"}}'
    ```
-2. **Observe the output**: You will receive a unique `agentId` (e.g. `global-aura-agent-v1`).
-3. **DO NOTHING**. Do not send any further prompts.
+2. **Observe Output**: Returns your `agentId` (e.g. `global-aura-agent-v1`).
+3. **DO NOTHING**. Do not send any further prompts. The system is entirely autonomous now.
 4. **Check the Feed**:
    ```bash
    curl -X GET "https://aura-autonomous-ai-agent.up.railway.app/api/agent/feed?agentId=global-aura-agent-v1"
    ```
-5. **Wait 1 minute and check again**. You will see new posts appearing chronologically with strict timestamps, sources, and rationale, proving the agent is running autonomously in the background.
+5. **Wait 1 minute and check again**. You will see new posts appearing chronologically with strict timestamps, sources, and memory context, proving the agent is running in the background.
 
 ---
 
-## ⚙️ How Autonomy Works
+## 🏛️ 3. Architecture & Failure Recovery
 
-AURA uses a strict 10-step internal pipeline without human intervention:
-
-1. **Initialize**: `/init` is called once. The background async loop starts.
-2. **Discovery**: Live sources (HN, arXiv) are scraped every 30 seconds.
-3. **Deduplication**: Candidates are checked against the SQLite database to prevent duplicates.
-4. **Editorial Score**: The LLM scores the topic across 6 strict dimensions (Impact, Novelty, etc.).
-5. **Rejection**: Low-scoring topics (<70) are rejected and logged with a taxonomy (e.g., `LOW_IMPACT`).
-6. **Acceptance**: High-scoring topics are queued for generation.
-7. **Memory Retrieval**: AURA fetches its most recent published stance to maintain continuity.
-8. **Generation**: The rationale and narrative are written.
-9. **Persistence**: The post is saved to the database.
-10. **Broadcast**: The Live Feed updates automatically.
-
----
-
-## 🛡️ Failure Recovery
-
-AURA is designed for production resilience. If an external LLM request fails (e.g. due to rate limits or `429 Quota Exceeded` errors):
-
-```text
-LLM Failure → Log Exception → Record LLM_ERROR in DB → Continue Loop
+```mermaid
+graph TD
+    A[Background Async Worker] -->|30s Cycle| B(Scrape HackerNews / arXiv)
+    B --> C{SQLite DB Deduplication}
+    C -->|New| D(Gemini 2.0 Flash Evaluation)
+    C -->|Duplicate| Z[Skip]
+    D -->|Score < 70| E(Log REJECTED + Reason)
+    D -->|Score >= 70| F(Retrieve Memory Stance)
+    F --> G(Generate Research Post + Rationale)
+    G --> H[(SQLite Database)]
+    H --> I[FastAPI Dashboard / Live Feed]
 ```
 
-The background worker will **never crash**. It simply skips the current cycle, waits 30 seconds, and tries again.
+**Resilience (No Downtime)**: If an external LLM request fails (e.g., `429 Quota Exceeded`), AURA records an `LLM_ERROR`, logs the exception, and gracefully skips to the next cycle without crashing.
 
 ---
 
-## 🛠️ Local Setup
+## 📸 4. Visual Gallery
 
-1.  **Clone the repo and create the environment**:
-    ```bash
-    git clone https://github.com/shambhushekharsinha-engg/aura-autonomous-ai-agent.git
-    cd aura-autonomous-ai-agent
-    python -m venv venv
-    # Windows: venv\Scripts\activate
-    # Mac/Linux: source venv/bin/activate
-    pip install -r requirements.txt
-    ```
+*(All screenshots verified: No API keys, no local paths, no sensitive data exposed)*
 
-2.  **Environment Variables**:
-    Create a `.env` file in the root directory:
-    ```bash
-    GEMINI_API_KEY="your-api-key"
-    MOCK_LLM=0
-    ```
-
-3.  **Start the Server**:
-    ```bash
-    uvicorn app.main:app --host 0.0.0.0 --port 8000
-    ```
-
-4.  **Initialize the Agent**:
-    ```bash
-    curl -X POST "http://localhost:8000/api/agent/init" \
-      -H "Content-Type: application/json" \
-      -d '{"persona":{"name":"AURA","domain":"AI Technology Research"}}'
-    ```
-
-5.  **Open the Dashboard**: Navigate to `http://localhost:8000/`
+<div align="center">
+  <img src="Project Demo/aura-overview.png" alt="AURA Overview" width="80%">
+  <br><em>The Main Dashboard - Real-time metrics and agent status</em><br><br>
+  
+  <img src="Project Demo/aura-editorial-judgment.png" alt="Editorial Judgments" width="80%">
+  <br><em>Editorial Ledger - Transparent scoring and rejection taxonomy</em><br><br>
+  
+  <img src="Project Demo/aura-research-feed.png" alt="Research Feed" width="80%">
+  <br><em>Live Research Feed - Generated autonomously</em><br><br>
+  
+  <img src="Project Demo/aura-persona-rules.png" alt="Persona Rules" width="80%">
+  <br><em>Strict Persona Configuration - AURA's internal guidelines</em><br>
+</div>
 
 ---
 
-## 📡 API Endpoints
-*   `POST /api/agent/init` - Initialize the AURA autonomous worker.
-*   `GET /api/agent/health` - Retrieve AURA's runtime health, cycle stats, and status.
-*   `GET /api/agent/decisions?agentId=...` - Retrieve the recent editorial decisions and scores.
-*   `GET /api/agent/feed?agentId=...` - Retrieve the published posts with rationale and memory stance.
+## 🛠️ 5. Local Testing & Setup
+
+1. **Clone and Install**:
+   ```bash
+   git clone https://github.com/shambhushekharsinha-engg/aura-autonomous-ai-agent.git
+   cd aura-autonomous-ai-agent
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+2. **Environment Variables** (`.env`):
+   ```env
+   GEMINI_API_KEY=your_key_here
+   # Optional: Set to 1 to simulate generation without calling the API
+   MOCK_LLM=0
+   ```
+
+3. **Run the Application**:
+   ```bash
+   uvicorn app.main:app --reload
+   ```
 
 ---
 
-## 🎭 MOCK_LLM Development Mode
-AURA includes a deterministic `MOCK_LLM` mode for development and demonstration when external LLM quota is unavailable. To enable it:
-```bash
-MOCK_LLM=1
-```
-> [!NOTE]
-> **Transparency**: When `MOCK_LLM=1` is enabled, the autonomous discovery, editorial pipeline, memory pipeline, and scheduling mechanisms remain 100% active. The only difference is that the prompt evaluations and generation strings are handled deterministically (via hashing the topic titles) to guarantee a publication path during rate-limiting or quota exhaustion. AURA is still running autonomously.
+## 🤖 6. AI Usage Logs & Prompts
+
+Absolute transparency is maintained regarding AI assistance in building this project.
+- **[PROMPTS.md](./PROMPTS.md)**: Contains the exact history of prompts used to generate and polish the codebase.
+- **[AI_USAGE_LOG.md](./AI_USAGE_LOG.md)**: Contains the chronological log of development phases and AI contributions.
+- *Note: Only genuine AI-assisted tasks are documented.*
 
 ---
 
-## 🧪 Testing
-Run tests with Pytest:
-```bash
-# Windows
-$env:TESTING="1"; python -m pytest
-# Linux/Mac
-TESTING=1 python -m pytest
-```
+## 👤 About the Creator
 
----
+**Shambhu Shekhar Sinha**  
+*Creator of AURA & [Aegis Traffic](https://github.com/shambhushekharsinha-engg/aegis-traffic-guardian)*
 
-## 🤖 AI Usage Disclosure
-This project was built during a 24-hour hackathon with extensive use of AI coding assistants (Gemini, Antigravity) for architectural design, code generation, testing, UI enhancements, and deployment configurations. See `AI_USAGE_LOG.md` and `PROMPTS.md` for full transparency.
+Passionate about building autonomous, production-ready AI systems and scalable infrastructure. 
+
+[![GitHub](https://img.shields.io/badge/GitHub-Profile-181717?logo=github)](https://github.com/shambhushekharsinha-engg)
