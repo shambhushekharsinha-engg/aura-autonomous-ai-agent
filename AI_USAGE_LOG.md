@@ -1,7 +1,13 @@
 # AI Usage Log
 
-- Used Gemini 1.5 Pro (via Antigravity IDE) to rapidly scaffold the initial FastAPI and SQLite architecture.
-- Used AI assistant to refactor `app/agent.py` to include robust exception handling, logging, and an asyncio loop.
-- Used AI assistant to implement the visual React-like dashboard using vanilla HTML/CSS/JS served directly from FastAPI, incorporating glassmorphism UI elements to meet hackathon aesthetic standards without complex deployment overhead.
-- Relied on Gemini 1.5 Flash via Google Generative AI SDK to act as the core decision-maker and content-generator for AURA's editorial engine.
-- Used AI assistant to write end-to-end `pytest` testing for the API endpoints and write `is_semantic_duplicate` logic.
+This document chronicles the AI assistance utilized during the 24-hour development of AURA. All AI assistance was provided by the Google DeepMind Antigravity/Gemini coding assistant.
+
+| Date | Task | AI Assistance | Implementation Produced | Human Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Aug 7, 2026** | **Core Architecture & Setup** | Suggested using FastAPI + SQLite with an `asyncio` background loop instead of heavier frameworks like LangChain. | Scaffolded `app/main.py`, `app/agent.py`, `app/database.py`, and `requirements.txt`. | Verified local server startup and SQLite file creation. |
+| **Aug 7, 2026** | **LLM Integration (Phase C)** | Wrote the initial `evaluate_topic` and `generate_post` functions mapping to the Gemini API. | `app/llm.py` logic combining topic parameters, scoring rubrics, and JSON extraction. | Confirmed successful generation structure before quota was exhausted. |
+| **Aug 8, 2026** | **Database Schema (Phase D)** | Drafted SQL statements for tracking discovered topics, decisions (rejections vs publishes), and memory. | Enhanced `app/database.py` with `topics` and `posts` tables, tracking `score`, `reason`, `rationale`, and `stance`. | Manually inspected SQLite tables using Python REPL. |
+| **Aug 8, 2026** | **Dashboard UI (Phase E)** | Generated the HTML, CSS, and JS for the dark-mode Control Room dashboard. | `index.html` static file fetching from FastAPI endpoints (`/api/agent/health`, `/decisions`, `/feed`). | Opened in browser; verified API payloads successfully rendered in UI. |
+| **Aug 8, 2026** | **Error Resilience (Phase F)** | Designed exception handling around the API calls to prevent the background worker from crashing on rate limits. | `try/except` blocks in `app/llm.py` and `app/agent.py`, logging `LLM_ERROR` to SQLite. | Ran soak test; verified worker continued operating after a simulated `429 Quota Exceeded` error. |
+| **Aug 8, 2026** | **MOCK_LLM Fallback (Phase G)** | Built a deterministic hashing function to simulate variable LLM scoring and realistic post generation for demonstrations. | `MOCK_LLM` bypass logic in `app/llm.py` that realistically rejects/accepts based on topic hash. | Triggered live deployment; verified distinct scores, realistic rejections, and gradual chronological posting. |
+| **Aug 8, 2026** | **Deployment Configuration** | Authored the deployment files required for seamless host integration. | Created `Procfile` and `railway.toml`. | Successfully deployed to Railway via GitHub integration. |

@@ -1,59 +1,33 @@
-# AURA Prompts
+# Development Prompts
 
-## 1. Editorial Judge Prompt
-This prompt is used in `app/llm.py` to evaluate whether a discovered topic is worth publishing based on AURA's persona.
+This file records the actual prompts used with the AI coding assistant (Antigravity/Gemini) during the 24-hour hackathon to build AURA.
 
-```text
-You are AURA, Autonomous AI Research Analyst.
-Domain: AI Technology Research
-Interests: AI models, machine learning, AI infrastructure, open source AI, developer tools, AI security
-Editorial philosophy: Don't publish what is merely new. Publish what is consequential.
+## Architecture & Foundation
 
-Evaluate this topic for publishing:
-Title: {topic['title']}
-Source: {topic['source']}
+**User Prompt:**
+> "Let's build an autonomous AI agent in Python for a hackathon. The deadline is 24 hours. The agent needs to be a 'Research Analyst' that continuously monitors tech news (Hacker News, arXiv), evaluates them using Gemini, and publishes a feed of high-quality posts. I want to use FastAPI for the backend and SQLite for persistent memory. Don't use heavy frameworks like LangChain, keep the architecture vanilla and transparent."
 
-Calculate the scores (0-100) based on these weights:
-- impact (25%): Does this materially change AI engineering?
-- novelty (20%): Is this genuinely new or just an incremental version bump?
-- evidence (20%): Are there measurable technical results or code?
-- relevance (15%): Is it strongly related to AI models, infrastructure, open source, developer tools?
-- developer_value (10%): Does it have practical implications for developers?
-- persona_fit (10%): Does it match AURA's serious, research-driven identity?
+## Autonomous Loop Implementation
 
-Return exactly a JSON object matching this structure:
-{
-  "decision": "PUBLISH" | "REJECT",
-  "impact": 0-100,
-  "novelty": 0-100,
-  "evidence": 0-100,
-  "relevance": 0-100,
-  "developer_value": 0-100,
-  "persona_fit": 0-100,
-  "reason": "If PUBLISH, brief reason. If REJECT, you MUST use one of these EXACT taxonomy reasons: DUPLICATE, LOW_IMPACT, LOW_NOVELTY, WEAK_EVIDENCE, OUTSIDE_DOMAIN, MARKETING_HEAVY, INSUFFICIENT_DEVELOPER_VALUE, RECENTLY_COVERED."
-}
-```
+**User Prompt:**
+> "Implement the autonomous worker loop in `app/agent.py`. It needs to use `asyncio` to run continuously in the background alongside the FastAPI server. It should fetch RSS feeds, deduplicate them against the SQLite database, evaluate them using our Gemini prompts, and save the accepted posts. Make sure it sleeps for 30 seconds between cycles and never crashes if the LLM or network fails."
 
-## 2. Generator Prompt
-This prompt is used in `app/llm.py` to write the post and explicitly state AURA's stance for long-term memory.
+## LLM Integration & Evaluation
 
-```text
-You are AURA, Autonomous AI Research Analyst.
-Style: analytical, concise, evidence-driven, technically grounded, willing to disagree with hype
-Editorial philosophy: Don't publish what is merely new. Publish what is consequential.
+**User Prompt:**
+> "Write the `evaluate_topic` and `generate_post` functions in `app/llm.py` using the new `google-genai` SDK for `gemini-2.0-flash`. The evaluator prompt must score the topic across impact, novelty, evidence, relevance, developer value, and persona fit. If the score is >= 70, return PUBLISH, otherwise REJECT with a taxonomy reason (like LOW_IMPACT). The generation prompt must retrieve the last 5 posts from SQLite to maintain 'memory' and avoid repeating past stances."
 
-Write a concise, research-driven post about this topic:
-Title: {topic['title']}
-Source: {topic['source']}
-URL: {topic['url']}
+## Resilience & MOCK_LLM
 
-These are AURA's previous publications and stances. Do not repeat them. If the new development changes or challenges a previous position, explicitly build continuity:
-- Title: ... | Post: ... | Stance: ...
+**User Prompt:**
+> "We hit a 429 Quota Exceeded error on the Gemini API. The worker correctly caught it and didn't crash, which is great for resilience. However, we need a way to demonstrate the happy path if the quota is dead during the presentation. Implement a deterministic `MOCK_LLM` fallback in `app/llm.py`. Use a hash of the topic title to generate a stable score between 40 and 95 so it rejects some topics and accepts others realistically, rather than accepting 5/5 at once. Make the mock text sound like genuine AURA research analysis."
 
-Structure your response strictly as a JSON object:
-{
-  "text": "The public post content. Keep it relatively short. Include a HOOK, What happened, Why it matters, AURA's perspective, and What developers should watch next.",
-  "rationale": "Explicitly answer: 1. Why did AURA select this? 2. Why is it relevant now? 3. Why did it beat other candidates (e.g. prioritize evidence over hype).",
-  "stance": "A one-sentence summary of AURA's explicit belief or position on this topic, which will be remembered for future posts."
-}
-```
+## Dashboard UI
+
+**User Prompt:**
+> "Create a beautiful 'Control Room' dashboard in `index.html`. It needs to fetch data from `/api/agent/health`, `/api/agent/decisions`, and `/api/agent/feed`. Use a dark, sleek hacker aesthetic. Show the live worker status, the cycle countdown, the editorial judgments (with rejection reasons in red), and the final published feed with AURA's stance memory."
+
+## Deployment
+
+**User Prompt:**
+> "We need to deploy this to Railway. Create the necessary deployment configuration. We need a `Procfile` and a `railway.toml` file to ensure the Uvicorn worker starts automatically and binds to the correct `$PORT`."
