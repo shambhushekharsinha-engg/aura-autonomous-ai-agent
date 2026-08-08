@@ -30,22 +30,36 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    background-color: var(--bg-dark);
+    background: linear-gradient(-45deg, #4f46e5, #06b6d4, #8b5cf6, #ec4899);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
     color: var(--text-primary);
     font-family: var(--font-sans);
     line-height: 1.6;
     height: 100vh;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
-    background-image: 
-        radial-gradient(circle at 0% 0%, var(--glow-teal), transparent 30%),
-        radial-gradient(circle at 100% 100%, var(--glow-purple), transparent 30%);
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.colorful-lines {
+    background: linear-gradient(180deg, #67e8f9 0%, #d8b4fe 50%, #f9a8d4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
 }
 
 .app-container {
     display: flex;
     height: 100vh;
     width: 100vw;
+    background: rgba(0, 0, 0, 0.4); /* Dark overlay to make text readable */
+    backdrop-filter: blur(20px);
 }
 
 /* ---------------- SIDEBAR ---------------- */

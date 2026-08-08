@@ -109,7 +109,7 @@ function renderFeed(posts) {
                 <div class="time"><i class="fa-regular fa-clock"></i> ${dateStr}</div>
             </div>
             
-            <div class="post-text">${post.text}</div>
+            <div class="post-text colorful-lines">${post.text}</div>
             
             <div class="post-blocks">
                 <div class="insight-block rationale">
