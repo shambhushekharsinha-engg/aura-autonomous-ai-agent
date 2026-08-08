@@ -21,28 +21,36 @@ async function initAgent() {
     }
 }
 
-async function fetchData() {
-    if (!agentId) return;
+function updateHealth(health) {
+    document.getElementById('stat-discovered').innerText = health.topicsDiscovered;
+    document.getElementById('stat-published').innerText = health.postsPublished;
+    document.getElementById('stat-rejected').innerText = health.topicsRejected;
     
-    try {
-        // Fetch Stats
-        const statsRes = await fetch(`/api/agent/stats?agentId=${agentId}`);
-        if (statsRes.ok) {
-            const stats = await statsRes.json();
-            document.getElementById('stat-discovered').innerText = stats.discovered;
-            document.getElementById('stat-published').innerText = stats.published;
-            document.getElementById('stat-rejected').innerText = stats.rejected;
-        }
+    document.getElementById('worker-status').innerText = health.workerRunning ? '● Worker online' : '○ Worker offline';
+    document.getElementById('worker-status').style.color = health.workerRunning ? 'var(--accent)' : 'var(--reject)';
+    
+    const timeSince = health.lastCycleAt ? Math.floor((new Date() - new Date(health.lastCycleAt)) / 1000) : '--';
+    const timeUntil = health.nextCycleAt ? Math.floor((new Date(health.nextCycleAt) - new Date()) / 1000) : '--';
+    
+    document.getElementById('last-cycle-time').innerText = timeSince !== '--' ? `${timeSince} sec ago` : '--';
+    document.getElementById('next-cycle-time').innerText = timeUntil !== '--' ? (timeUntil > 0 ? `${timeUntil} sec` : 'Running now...') : '--';
+    document.getElementById('cycles-count').innerText = health.cyclesCompleted;
+}
 
-        // Fetch Feed
-        const feedRes = await fetch(`/api/agent/feed?agentId=${agentId}`);
-        if (feedRes.ok) {
-            const feed = await feedRes.json();
-            renderFeed(feed.posts);
-        }
-    } catch (e) {
-        console.error("Failed fetching data", e);
+function renderDecisions(decisions) {
+    const container = document.getElementById('decisions-container');
+    if (decisions.length === 0) {
+        container.innerHTML = '<div class="loading-state">No decisions yet...</div>';
+        return;
     }
+    
+    container.innerHTML = decisions.map(d => `
+        <div class="decision-item">
+            <div class="decision-icon ${d.decision.toLowerCase()}">${d.decision === 'PUBLISH' ? '✓' : '✕'}</div>
+            <div class="decision-score">${Math.round(d.score)}</div>
+            <div class="decision-title" title="${d.topic}">${d.topic}</div>
+        </div>
+    `).join('');
 }
 
 function renderFeed(posts) {
@@ -61,7 +69,14 @@ function renderFeed(posts) {
         
         let sourcesHtml = '';
         if (post.sources && post.sources.length > 0) {
-            sourcesHtml = post.sources.map(s => `<a href="${s}" target="_blank">View Source ↗</a>`).join('');
+            sourcesHtml = post.sources.map(s => {
+                let cls = 'secondary';
+                if (s.includes('arxiv.org') || s.includes('github.com')) cls = 'primary';
+                const domain = new URL(s).hostname.replace('www.', '');
+                return `<a href="${s}" target="_blank" class="source-badge ${cls}">
+                            <span class="badge-dot"></span>${domain} ↗
+                        </a>`;
+            }).join('');
         }
 
         card.innerHTML = `
@@ -70,10 +85,10 @@ function renderFeed(posts) {
             </div>
             <div class="post-text">${post.text}</div>
             
-            <div class="post-section-title">AURA'S STANCE</div>
+            <div class="post-section-title">MEMORY CONNECTION</div>
             <div class="post-stance">${post.stance || 'No explicit stance recorded.'}</div>
             
-            <div class="post-section-title">WHY SELECTED</div>
+            <div class="post-section-title">WHY AURA PUBLISHED THIS</div>
             <div class="post-rationale">${post.rationale}</div>
             
             <div class="post-sources">${sourcesHtml}</div>
@@ -82,12 +97,29 @@ function renderFeed(posts) {
     });
 }
 
-// Initial Boot
+async function fetchData() {
+    if (!agentId) return;
+    
+    try {
+        const [healthRes, decRes, feedRes] = await Promise.all([
+            fetch(`/api/agent/health`),
+            fetch(`/api/agent/decisions?agentId=${agentId}`),
+            fetch(`/api/agent/feed?agentId=${agentId}`)
+        ]);
+        
+        if (healthRes.ok) updateHealth(await healthRes.json());
+        if (decRes.ok) renderDecisions((await decRes.json()).decisions);
+        if (feedRes.ok) renderFeed((await feedRes.json()).posts);
+        
+    } catch (e) {
+        console.error("Failed fetching data", e);
+    }
+}
+
 if (!agentId) {
     initAgent();
 } else {
     fetchData();
 }
 
-// Poll every 10 seconds
 setInterval(fetchData, 10000);

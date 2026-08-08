@@ -39,8 +39,45 @@
         </header>
 
         <main class="dashboard-grid">
-            <section class="feed-section">
-                <h2>LIVE RESEARCH FEED</h2>
+            <div class="sidebar">
+                <section class="activity-section card">
+                    <h3>AUTONOMOUS ACTIVITY</h3>
+                    <div class="activity-details">
+                        <p id="worker-status">● Worker online</p>
+                        <p>Last cycle: <span id="last-cycle-time">--</span></p>
+                        <p>Next cycle: <span id="next-cycle-time">--</span></p>
+                        <p>Cycles: <span id="cycles-count">0</span></p>
+                    </div>
+                </section>
+                
+                <section class="persona-section card">
+                    <h3>AURA PERSONA</h3>
+                    <div class="persona-details">
+                        <p><strong>AI Research Analyst</strong></p>
+                        <p>AI + Technology</p>
+                        <hr>
+                        <h4>Editorial Philosophy</h4>
+                        <p>AURA looks for:</p>
+                        <ul>
+                            <li>Technical significance</li>
+                            <li>Evidence quality</li>
+                            <li>Developer impact</li>
+                            <li>Novelty</li>
+                            <li>Long-term relevance</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section class="decisions-section card">
+                    <h3>EDITORIAL JUDGMENT</h3>
+                    <div id="decisions-container">
+                        <div class="loading-state">Initializing...</div>
+                    </div>
+                </section>
+            </div>
+
+            <section class="feed-section card">
+                <h2>AUTONOMOUS RESEARCH FEED</h2>
                 <div id="feed-container" class="feed-container">
                     <div class="loading-state">Initializing AURA...</div>
                 </div>
