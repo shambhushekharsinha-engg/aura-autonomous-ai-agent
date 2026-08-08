@@ -10,7 +10,7 @@ def discover_topics():
     # Source 1: Hacker News AI
     try:
         logger.info("Fetching Hacker News feed...")
-        response = httpx.get('https://hnrss.org/newest?q=AI', timeout=10.0)
+        response = httpx.get('https://hnrss.org/newest?q=AI', timeout=10.0, follow_redirects=True)
         response.raise_for_status()
         hn_feed = feedparser.parse(response.text)
         
@@ -28,7 +28,7 @@ def discover_topics():
     # Source 2: ArXiv CS.AI
     try:
         logger.info("Fetching arXiv feed...")
-        response = httpx.get('http://export.arxiv.org/rss/cs.AI', timeout=10.0)
+        response = httpx.get('https://export.arxiv.org/rss/cs.AI', timeout=10.0, follow_redirects=True)
         response.raise_for_status()
         arxiv_feed = feedparser.parse(response.text)
         

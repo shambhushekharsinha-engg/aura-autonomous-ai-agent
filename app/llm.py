@@ -57,7 +57,7 @@ If the weighted overall score >= 70, decision should be "PUBLISH", else "REJECT"
 Respond ONLY with the JSON. Do not include markdown formatting or backticks.
 """
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.0-flash')
         response = model.generate_content(prompt)
         text = response.text.strip()
         if text.startswith('```json'):
@@ -100,7 +100,7 @@ Structure your response strictly as a JSON object:
 Respond ONLY with the JSON. Do not include markdown formatting or backticks.
 """
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.0-flash')
         response = model.generate_content(prompt)
         text = response.text.strip()
         if text.startswith('```json'):
