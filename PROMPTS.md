@@ -27,6 +27,21 @@ This file records the actual prompts used with the AI coding assistant (Antigrav
 **User Prompt:**
 > "Create a beautiful 'Control Room' dashboard in `index.html`. It needs to fetch data from `/api/agent/health`, `/api/agent/decisions`, and `/api/agent/feed`. Use a dark, sleek hacker aesthetic. Show the live worker status, the cycle countdown, the editorial judgments (with rejection reasons in red), and the final published feed with AURA's stance memory."
 
+**User Prompt:**
+> "The ui looking is very bad and buttons looking ugly kindly make it a beautiful and colourful with creative design and button like tabs as ui. Remove the black background to colourful background and each line in different colours which gives it a premium look."
+
+## Architecture & Concurrency Bugfix
+
+**User Prompt:**
+> "The website is taking a long time to load. The research pool is not loading in 1 minute. Why not sync all data instantly across visitors?"
+
+*Action Taken:* We identified a massive concurrency bug where `BackgroundTasks` executing an infinite `run_until_complete` loop was completely exhausting the FastAPI/Uvicorn thread pool, causing all other API routes to hang infinitely. The AI agent rewrote the backend to use native `asyncio.create_task()` on the main event loop to solve the blockage. It also introduced a `global-aura-agent-v1` ID so the feed persists across browser instances.
+
+## Final Polish & Report Summary
+
+**User Prompt:**
+> "Let's edit and add some more features which will design up the llm app and looks very beautiful and cool upon visiting. Add more accessibility features, a report summary feature, a share feature, and redesign the README to give it a very cool look."
+
 ## Deployment
 
 **User Prompt:**

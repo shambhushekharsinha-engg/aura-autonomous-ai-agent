@@ -1,4 +1,5 @@
 let agentId = localStorage.getItem('auraAgentId');
+let allDecisions = []; // store for report
 
 // Navigation Tabs
 document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -17,8 +18,33 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
             'persona': 'AURA Persona'
         };
         document.getElementById('current-view-title').innerText = titleMap[tabId];
+        
+        // Show download button only on decisions tab
+        document.getElementById('btn-download-report').style.display = tabId === 'decisions' ? 'flex' : 'none';
     });
 });
+
+function downloadReport() {
+    if (allDecisions.length === 0) return alert('No decisions to export yet.');
+    let csv = 'Status,Score,Topic,Reason,Date\n';
+    allDecisions.forEach(d => {
+        const topic = `"${d.topic.replace(/"/g, '""')}"`;
+        csv += `${d.decision},${Math.round(d.score)},${topic},${d.reason},${d.createdAt}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `AURA_Decisions_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+}
+
+async function sharePost(btn, postId) {
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+    navigator.clipboard.writeText(`Check out this AI research post published by AURA:\nhttps://aura-autonomous-ai-agent.up.railway.app/#${postId}`);
+    setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+}
 
 async function initAgent() {
     try {
@@ -61,11 +87,26 @@ function updateHealth(health) {
 }
 
 function renderDecisions(decisions) {
+    allDecisions = decisions;
     const container = document.getElementById('decisions-container');
+    const latestContainer = document.getElementById('latest-decision-content');
+    
     if (decisions.length === 0) {
         container.innerHTML = `<div class="loading-state"><p>No decisions yet...</p></div>`;
         return;
     }
+    
+    // Render Latest Decision in Sidebar
+    const ld = decisions[0];
+    const isLdPub = ld.decision === 'PUBLISH';
+    const ldIcon = isLdPub ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-xmark"></i>';
+    latestContainer.innerHTML = `
+        <span class="ld-title" title="${ld.topic}">${ld.topic}</span>
+        <div class="ld-status ${isLdPub ? 'publish' : 'reject'}">
+            <span class="ld-score">${Math.round(ld.score)}</span>
+            ${ldIcon} ${ld.decision} ${!isLdPub ? `<span style="color:var(--text-tertiary);font-weight:normal;font-size:0.7rem;margin-left:4px;">${ld.reason}</span>` : ''}
+        </div>
+    `;
     
     container.innerHTML = decisions.map(d => {
         const isPub = d.decision === 'PUBLISH';
@@ -104,9 +145,12 @@ function renderFeed(posts) {
         }
 
         return `
-        <div class="post-card">
+        <div class="post-card" id="${post.id}">
             <div class="post-meta">
                 <div class="time"><i class="fa-regular fa-clock"></i> ${dateStr}</div>
+                <button class="share-btn" onclick="sharePost(this, '${post.id}')" aria-label="Share Post">
+                    <i class="fa-solid fa-share-nodes"></i> Share
+                </button>
             </div>
             
             <div class="post-text colorful-lines">${post.text}</div>

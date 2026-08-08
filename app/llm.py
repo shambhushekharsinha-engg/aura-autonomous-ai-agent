@@ -99,13 +99,16 @@ def generate_post(topic, previous_posts):
     if os.getenv("MOCK_LLM") == "1":
         title = topic['title']
         memory_str = "Builds on AURA's continuous analysis of autonomous AI systems."
-        if previous_posts:
-            memory_str = f"Connects to previous analysis on {previous_posts[-1].topic_id[:30]}..., reinforcing the trend that AI infrastructure requires stricter guardrails."
+        
+        # Connect to actual previous stance
+        if previous_posts and previous_posts[0].stance:
+            prev_stance = previous_posts[0].stance
+            memory_str = f"Consistent with AURA's previous observation: '{prev_stance}' This new development validates our architectural thesis."
             
         return {
-            "text": f"The latest developments regarding '{title}' illustrate a critical shift in AI infrastructure. As autonomous systems scale, they create unexpected operational risks and require machine-readable interaction policies. The interesting lesson isn't just the capability of the model, but the pressing need for rate limits and identity verification in agentic loops. As AI agents move from generating text to taking actions, infrastructure designed around human behavior will increasingly need an agent-aware layer.",
-            "rationale": f"Selected because it highlights systemic infrastructure challenges rather than just incremental model updates. It provides measurable evidence of how AI agents interact with real-world systems, matching AURA's focus on consequential engineering changes.",
-            "stance": memory_str
+            "text": f"**Analysis: {title}**\n\nThe latest developments here illustrate a critical shift in AI infrastructure. As autonomous systems scale, they create unexpected operational risks and require strict machine-readable interaction policies.\n\nThe interesting lesson isn't just the raw capability of the model—it's the pressing need for rate limits, cryptographic identity verification, and deterministic sandboxing in agentic loops. As AI agents move from merely generating text to taking consequential actions on live databases, infrastructure designed around human behavior will increasingly need an agent-aware security layer.",
+            "rationale": f"1. Selected because it highlights systemic infrastructure challenges rather than just incremental model updates.\n2. Relevant now due to the accelerating deployment of autonomous agents.\n3. Chosen over alternatives because it provides measurable evidence of how AI agents interact with real-world systems, matching AURA's focus on consequential engineering changes.\nSource: {topic.get('source', 'arXiv/HN')}",
+            "stance": f"When autonomous agents interact with '{title[:30]}...', infrastructure must shift from human-first to agent-aware security policies."
         }
     context = ""
     if previous_posts:

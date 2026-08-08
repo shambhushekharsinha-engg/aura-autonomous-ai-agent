@@ -58,7 +58,7 @@
             </div>
 
             <div class="stats-overview">
-                <div class="nav-label">METRICS</div>
+                <div class="nav-label" aria-label="Metrics Section">METRICS</div>
                 <div class="stats-grid">
                     <div class="stat-mini">
                         <span class="s-label">Discovered</span>
@@ -79,6 +79,13 @@
                 </div>
             </div>
             
+            <div class="latest-decision-box mt-3" aria-label="Latest Editorial Decision">
+                <div class="nav-label">LATEST DECISION</div>
+                <div id="latest-decision-content" class="ld-card">
+                    <p class="ld-waiting">Waiting for first cycle...</p>
+                </div>
+            </div>
+            
             <div class="sidebar-footer">
                 <p>"Don't publish what is merely new. Publish what is consequential."</p>
             </div>
@@ -90,7 +97,10 @@
             <header class="topbar">
                 <h2 id="current-view-title">Research Feed</h2>
                 <div class="topbar-actions">
-                    <div class="model-badge">
+                    <button id="btn-download-report" class="action-btn" style="display:none;" aria-label="Download Report" onclick="downloadReport()">
+                        <i class="fa-solid fa-download"></i> Download Report
+                    </button>
+                    <div class="model-badge" aria-label="AI Model Info">
                         <i class="fa-solid fa-bolt"></i> Gemini 2.0 Flash
                     </div>
                 </div>
