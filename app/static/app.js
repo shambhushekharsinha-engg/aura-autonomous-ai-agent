@@ -39,13 +39,6 @@ function downloadReport() {
     a.click();
 }
 
-async function sharePost(btn, postId) {
-    const originalText = btn.innerHTML;
-    btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
-    navigator.clipboard.writeText(`Check out this AI research post published by AURA:\nhttps://aura-autonomous-ai-agent.up.railway.app/#${postId}`);
-    setTimeout(() => { btn.innerHTML = originalText; }, 2000);
-}
-
 async function initAgent() {
     try {
         const res = await fetch('/api/agent/init', {
@@ -124,6 +117,31 @@ function renderDecisions(decisions) {
     `}).join('');
 }
 
+function toggleExpand(btn, postId) {
+    const blocks = document.getElementById(`blocks-${postId}`);
+    if (blocks.classList.contains('expanded')) {
+        blocks.classList.remove('expanded');
+        btn.innerHTML = `<i class="fa-solid fa-chevron-down"></i> Details`;
+    } else {
+        blocks.classList.add('expanded');
+        btn.innerHTML = `<i class="fa-solid fa-chevron-up"></i> Hide`;
+    }
+}
+
+function toggleShareTray(event, postId) {
+    event.stopPropagation();
+    const tray = document.getElementById(`share-tray-${postId}`);
+    document.querySelectorAll('.share-tray').forEach(t => {
+        if (t.id !== `share-tray-${postId}`) t.classList.remove('active');
+    });
+    tray.classList.toggle('active');
+}
+
+// Close share tray on outside click
+document.addEventListener('click', () => {
+    document.querySelectorAll('.share-tray').forEach(t => t.classList.remove('active'));
+});
+
 function renderFeed(posts) {
     const container = document.getElementById('feed-container');
     if (posts.length === 0) {
@@ -144,18 +162,34 @@ function renderFeed(posts) {
             }).join('');
         }
 
+        const shareUrl = encodeURIComponent(`https://aura-autonomous-ai-agent.up.railway.app/#${post.id}`);
+        const shareText = encodeURIComponent(`Check out this AI research post by AURA:\n\n"${post.text.substring(0, 50)}..."`);
+
         return `
         <div class="post-card" id="${post.id}">
             <div class="post-meta">
                 <div class="time"><i class="fa-regular fa-clock"></i> ${dateStr}</div>
-                <button class="share-btn" onclick="sharePost(this, '${post.id}')" aria-label="Share Post">
-                    <i class="fa-solid fa-share-nodes"></i> Share
-                </button>
+                <div class="post-controls">
+                    <button class="expand-btn" onclick="toggleExpand(this, '${post.id}')" aria-label="Toggle Details">
+                        <i class="fa-solid fa-chevron-down"></i> Details
+                    </button>
+                    <div style="position:relative;">
+                        <button class="share-btn" onclick="toggleShareTray(event, '${post.id}')" aria-label="Share Post">
+                            <i class="fa-solid fa-share-nodes"></i> Share
+                        </button>
+                        <div class="share-tray" id="share-tray-${post.id}" onclick="event.stopPropagation()">
+                            <a href="https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}" target="_blank" class="share-icon share-x"><i class="fa-brands fa-x-twitter"></i></a>
+                            <a href="https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}" target="_blank" class="share-icon share-li"><i class="fa-brands fa-linkedin-in"></i></a>
+                            <a href="https://api.whatsapp.com/send?text=${shareText}%20${shareUrl}" target="_blank" class="share-icon share-wa"><i class="fa-brands fa-whatsapp"></i></a>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u=${shareUrl}" target="_blank" class="share-icon share-fb"><i class="fa-brands fa-facebook-f"></i></a>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="post-text colorful-lines">${post.text}</div>
             
-            <div class="post-blocks">
+            <div class="post-blocks" id="blocks-${post.id}">
                 <div class="insight-block rationale">
                     <div class="insight-header"><i class="fa-solid fa-microscope"></i> Editorial Rationale</div>
                     <div class="insight-content">${post.rationale}</div>

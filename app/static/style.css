@@ -371,10 +371,47 @@ body {
 }
 .action-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
 
-.share-btn {
+/* Share & Expand Controls */
+.post-controls {
+    display: flex; gap: 10px; align-items: center; margin-left: auto;
+}
+
+.expand-btn, .share-btn {
     background: transparent; border: 1px solid var(--border-subtle);
     color: var(--text-secondary); padding: 0.4rem 0.75rem; border-radius: 6px;
     font-size: 0.8rem; cursor: pointer; transition: var(--transition-smooth);
-    display: inline-flex; align-items: center; gap: 0.5rem; margin-left: auto;
+    display: inline-flex; align-items: center; gap: 0.5rem; position: relative;
 }
-.share-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+.expand-btn:hover, .share-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+
+.post-blocks {
+    display: none; /* hidden by default */
+    animation: fadeInDown 0.3s ease forwards;
+}
+.post-blocks.expanded {
+    display: flex;
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Share Tray */
+.share-tray {
+    display: none; position: absolute; top: calc(100% + 5px); right: 0;
+    background: var(--bg-card); border: 1px solid var(--border-subtle);
+    border-radius: 8px; padding: 0.5rem; z-index: 100;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    flex-direction: row; gap: 0.5rem;
+}
+.share-tray.active { display: flex; }
+.share-icon {
+    width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    color: white; text-decoration: none; font-size: 1rem; transition: transform 0.2s ease;
+}
+.share-icon:hover { transform: scale(1.1); }
+.share-x { background: #000; border: 1px solid #333; }
+.share-li { background: #0077b5; }
+.share-wa { background: #25D366; }
+.share-fb { background: #1877F2; }
