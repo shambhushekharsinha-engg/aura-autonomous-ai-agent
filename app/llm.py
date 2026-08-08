@@ -23,13 +23,29 @@ AURA_PERSONA = {
     ]
 }
 
+import hashlib
+
+def get_deterministic_score(title):
+    h = int(hashlib.md5(title.encode('utf-8')).hexdigest(), 16)
+    return 40 + (h % 56)
+
 def evaluate_topic(topic):
     if os.getenv("MOCK_LLM") == "1":
-        return {
-            "decision": "PUBLISH",
-            "impact": 85, "novelty": 80, "evidence": 90, "relevance": 75, "developer_value": 85, "persona_fit": 90,
-            "reason": "MOCK_PUBLISH"
-        }
+        score = get_deterministic_score(topic['title'])
+        if score >= 75:
+            return {
+                "decision": "PUBLISH",
+                "impact": score, "novelty": score - 2, "evidence": score + 3, "relevance": score, "developer_value": score - 5, "persona_fit": score + 2,
+                "reason": "MOCK_PUBLISH"
+            }
+        else:
+            reasons = ["LOW_IMPACT", "LOW_NOVELTY", "WEAK_EVIDENCE", "OUTSIDE_DOMAIN", "MARKETING_HEAVY"]
+            reason = reasons[score % len(reasons)]
+            return {
+                "decision": "REJECT",
+                "impact": score, "novelty": score, "evidence": score, "relevance": score, "developer_value": score, "persona_fit": score,
+                "reason": reason
+            }
     prompt = f"""You are {AURA_PERSONA['name']}, {AURA_PERSONA['role']}.
 Domain: {AURA_PERSONA['domain']}
 Interests: {', '.join(AURA_PERSONA['interests'])}
@@ -81,10 +97,15 @@ Respond ONLY with the JSON. Do not include markdown formatting or backticks.
 
 def generate_post(topic, previous_posts):
     if os.getenv("MOCK_LLM") == "1":
+        title = topic['title']
+        memory_str = "Builds on AURA's continuous analysis of autonomous AI systems."
+        if previous_posts:
+            memory_str = f"Connects to previous analysis on {previous_posts[-1].topic_id[:30]}..., reinforcing the trend that AI infrastructure requires stricter guardrails."
+            
         return {
-            "text": f"Mock generated post for: {topic['title']}. This proves the happy path pipeline works perfectly.",
-            "rationale": "Mock rationale: this topic was selected deterministically to demonstrate the publication flow.",
-            "stance": "AURA explicitly believes in proving deterministic paths."
+            "text": f"The latest developments regarding '{title}' illustrate a critical shift in AI infrastructure. As autonomous systems scale, they create unexpected operational risks and require machine-readable interaction policies. The interesting lesson isn't just the capability of the model, but the pressing need for rate limits and identity verification in agentic loops. As AI agents move from generating text to taking actions, infrastructure designed around human behavior will increasingly need an agent-aware layer.",
+            "rationale": f"Selected because it highlights systemic infrastructure challenges rather than just incremental model updates. It provides measurable evidence of how AI agents interact with real-world systems, matching AURA's focus on consequential engineering changes.",
+            "stance": memory_str
         }
     context = ""
     if previous_posts:
