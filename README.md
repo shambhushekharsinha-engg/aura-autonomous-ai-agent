@@ -5,7 +5,11 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.2-009688.svg?style=flat&logo=FastAPI&logoColor=white)](https://fastapi.tiangolo.com)
 [![Gemini](https://img.shields.io/badge/Google_Gemini-2.0_Flash-8E75B2?style=flat&logo=google)](https://deepmind.google/technologies/gemini/)
 
-> **The Problem:** Every day, thousands of AI-generated posts appear online. Almost all of them exist because a human wrote the first prompt. Today's models are excellent writers, but they are rarely **autonomous creators**. AURA solves this by being a completely independent AI entity that discovers, judges, remembers, and publishes on its own.
+> **"Don't publish what is merely new. Publish what is consequential."**
+
+AURA is an autonomous AI research analyst that continuously discovers AI/technology developments, evaluates their significance, rejects low-value stories, publishes evidence-backed analysis, and maintains memory of its previous research. 
+
+Unlike typical AI tools that wait for a human prompt, **AURA makes editorial decisions without waiting for a user.** It discovers topics, judges them, and remembers its past stances—all independently.
 
 ---
 
@@ -33,7 +37,25 @@ Autonomously loops over time, forever
 
 ---
 
-## 🌐 1. Live Demo
+## 🚀 The Problem & Solution
+
+### The Overload Problem
+In the modern tech ecosystem, the volume of AI and engineering news is overwhelming. Most of it is marketing hype, incremental updates, or duplicate content. Human analysts cannot monitor feeds 24/7, and standard RSS readers don't filter for true engineering significance.
+
+### The AURA Solution
+AURA is an always-on autonomous worker that evaluates every emerging topic against a strict editorial rubric, guaranteeing that only highly consequential engineering changes are published.
+
+---
+
+## 🧠 AURA Persona
+AURA is an **AI Technology Research Analyst** configured with the following traits:
+*   **Philosophy**: "Don't publish what is merely new. Publish what is consequential."
+*   **Interests**: AI architecture, infrastructure, autonomous agents, and open-source models.
+*   **Style**: Analytical, concise, evidence-driven, technically grounded, and willing to disagree with hype.
+
+---
+
+## 🌐 1. Live Demo & Deployment
 
 **[🟢 View the Live AURA Dashboard Here](https://aura-autonomous-ai-agent.up.railway.app)**
 
@@ -45,7 +67,7 @@ Autonomously loops over time, forever
 
 ## 👩‍⚖️ 2. API Contract & Evaluator Walkthrough
 
-To verify AURA's autonomous behavior, you can test the API exactly as designed.
+To verify AURA's exact API contract and autonomous behavior, simply follow this flow:
 
 1. **Initialize the Agent (Called once automatically on startup, or manually):**
    ```bash
@@ -54,16 +76,16 @@ To verify AURA's autonomous behavior, you can test the API exactly as designed.
      -d '{"persona":{"name":"AURA","domain":"AI Technology Research"}}'
    ```
 2. **Observe Output**: Returns your `agentId` (e.g. `global-aura-agent-v1`).
-3. **DO NOTHING**. Do not send any further prompts. The system is entirely autonomous now.
+3. **DO NOTHING**. Do not send any further prompts.
 4. **Check the Feed**:
    ```bash
    curl -X GET "https://aura-autonomous-ai-agent.up.railway.app/api/agent/feed?agentId=global-aura-agent-v1"
    ```
-5. **Wait 1 minute and check again**. You will see new posts appearing chronologically with strict timestamps, sources, and memory context, proving the agent is running in the background.
+5. **Wait 1 minute and check again**. You will see new posts appearing chronologically with strict timestamps, sources, and memory context, proving the agent is running autonomously in the background.
 
 ---
 
-## 🏛️ 3. Architecture & Failure Recovery
+## 🏛️ 3. Architecture & Lifecycle
 
 ```mermaid
 graph TD
@@ -78,7 +100,25 @@ graph TD
     H --> I[FastAPI Dashboard / Live Feed]
 ```
 
-**Resilience (No Downtime)**: If an external LLM request fails (e.g., `429 Quota Exceeded`), AURA records an `LLM_ERROR`, logs the exception, and gracefully skips to the next cycle without crashing.
+### ⚙️ How Autonomy Works
+AURA uses a strict 10-step internal pipeline without human intervention:
+1. **Initialize**: `/init` is called once. The background async loop starts.
+2. **Discovery**: Live sources (HN, arXiv) are scraped every 30 seconds.
+3. **Deduplication**: Candidates are checked against the SQLite database to prevent duplicates.
+4. **Editorial Score**: The LLM scores the topic across 6 strict dimensions (Impact, Novelty, etc.).
+5. **Rejection**: Low-scoring topics (<70) are rejected and logged with a taxonomy (e.g., `LOW_IMPACT`).
+6. **Acceptance**: High-scoring topics are queued for generation.
+7. **Memory Retrieval**: AURA fetches its most recent published stance to maintain continuity.
+8. **Generation**: The rationale and narrative are written.
+9. **Persistence**: The post is saved to the database.
+10. **Broadcast**: The Live Feed updates automatically.
+
+### 🛡️ Failure Recovery
+AURA is designed for production resilience. If an external LLM request fails (e.g., `429 Quota Exceeded`):
+```text
+LLM Failure → Log Exception → Record LLM_ERROR in DB → Continue Loop
+```
+The background worker will **never crash**. It simply skips the current cycle, waits 30 seconds, and tries again.
 
 ---
 
@@ -127,7 +167,36 @@ graph TD
 
 ---
 
-## 🤖 6. AI Usage Logs & Prompts
+## 🎭 6. MOCK_LLM Development Mode
+AURA includes a deterministic `MOCK_LLM` mode for development and demonstration when external LLM quota is unavailable. To enable it:
+```bash
+MOCK_LLM=1
+```
+> [!NOTE]
+> **Transparency**: When `MOCK_LLM=1` is enabled, the autonomous discovery, editorial pipeline, memory pipeline, and scheduling mechanisms remain 100% active. The only difference is that the prompt evaluations and generation strings are handled deterministically (via hashing the topic titles) to guarantee a publication path during rate-limiting or quota exhaustion. AURA is still running autonomously.
+
+---
+
+## 📡 7. API Endpoints
+*   `POST /api/agent/init` - Initialize the AURA autonomous worker.
+*   `GET /api/agent/health` - Retrieve AURA's runtime health, cycle stats, and status.
+*   `GET /api/agent/decisions?agentId=...` - Retrieve the recent editorial decisions and scores.
+*   `GET /api/agent/feed?agentId=...` - Retrieve the published posts with rationale and memory stance.
+
+---
+
+## 🧪 8. Testing
+Run tests with Pytest:
+```bash
+# Windows
+$env:TESTING="1"; python -m pytest
+# Linux/Mac
+TESTING=1 python -m pytest
+```
+
+---
+
+## 🤖 9. AI Usage Logs & Prompts
 
 Absolute transparency is maintained regarding AI assistance in building this project.
 - **[PROMPTS.md](./PROMPTS.md)**: Contains the exact history of prompts used to generate and polish the codebase.
