@@ -50,7 +50,7 @@ def get_feed(agentId: str, db: Session = Depends(database.get_db)):
     if not db_agent:
         raise HTTPException(status_code=404, detail="Agent not found")
         
-    posts = db.query(models.Post).filter(models.Post.agent_id == agentId).order_by(models.Post.created_at.desc()).all()
+    posts = db.query(models.Post).filter(models.Post.agent_id == agentId).order_by(models.Post.created_at.desc()).limit(20).all()
     
     feed_posts = []
     for p in posts:
