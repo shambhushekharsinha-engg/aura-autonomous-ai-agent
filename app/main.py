@@ -46,6 +46,7 @@ def get_feed(agentId: str, db: Session = Depends(database.get_db)):
             "createdAt": dt_str,
             "text": p.text,
             "rationale": p.rationale,
+            "stance": p.stance,
             "sources": p.sources if p.sources else []
         })
         

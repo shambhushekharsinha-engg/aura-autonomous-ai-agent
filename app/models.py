@@ -34,5 +34,6 @@ class Post(Base):
     topic_id = Column(String, index=True)
     text = Column(Text)
     rationale = Column(Text)
+    stance = Column(Text, nullable=True)
     sources = Column(JSON)
     created_at = Column(DateTime(timezone=True), default=utcnow)

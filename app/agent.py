@@ -10,6 +10,16 @@ DEVELOPMENT_INTERVAL = 30 # seconds
 PRODUCTION_INTERVAL = 900 # 15 minutes
 CURRENT_INTERVAL = DEVELOPMENT_INTERVAL
 
+def is_semantic_duplicate(new_title, recent_topics):
+    new_words = set(new_title.lower().split())
+    for t in recent_topics:
+        old_words = set(t.title.lower().split())
+        overlap = new_words.intersection(old_words)
+        # If more than 50% of the new title words are in an old title (ignoring stop words realistically, but this is a simple proxy)
+        if len(new_words) > 3 and len(overlap) / len(new_words) > 0.6:
+            return True
+    return False
+
 def get_previous_posts(db, agent_id, limit=5):
     return db.query(models.Post).filter(models.Post.agent_id == agent_id).order_by(models.Post.created_at.desc()).limit(limit).all()
 
@@ -25,12 +35,26 @@ async def autonomous_loop(agent_id: str):
             topics = discovery.discover_topics()
             logger.info(f"{len(topics)} topics discovered")
             
+            recent_published_topics = db.query(models.Topic).filter(models.Topic.decision == "PUBLISH").order_by(models.Topic.discovered_at.desc()).limit(10).all()
+            
             for t in topics:
                 try:
                     # Deduplicate by URL
                     existing = db.query(models.Topic).filter(models.Topic.url == t["url"]).first()
                     if existing:
-                        logger.info(f"Topic rejected | reason=DUPLICATE | title='{t['title']}'")
+                        logger.info(f"Topic rejected | reason=DUPLICATE_URL | title='{t['title']}'")
+                        continue
+                        
+                    # Deduplicate by semantic similarity (title word overlap)
+                    if is_semantic_duplicate(t["title"], recent_published_topics):
+                        logger.info(f"Topic rejected | reason=DUPLICATE_CONCEPT | title='{t['title']}'")
+                        
+                        db_topic = models.Topic(
+                            id=t["id"], title=t["title"], url=t["url"], source=t["source"],
+                            published_at=t["published_at"], score=0, decision="REJECT", rejection_reason="DUPLICATE_CONCEPT"
+                        )
+                        db.add(db_topic)
+                        db.commit()
                         continue
                     
                     # Evaluate
@@ -74,13 +98,26 @@ async def autonomous_loop(agent_id: str):
                     # Generate Post
                     post_data = llm.generate_post(t, previous_posts)
                     
+                    # VALIDATION
+                    text = post_data.get("text", "")
+                    rationale = post_data.get("rationale", "")
+                    stance = post_data.get("stance", "")
+                    
+                    if not text or not rationale or not stance or len(text) < 10:
+                        logger.error(f"VALIDATION FAILED: Post missing required fields. Discarding.")
+                        db_topic.decision = "REJECT"
+                        db_topic.rejection_reason = "VALIDATION_FAILED"
+                        db.commit()
+                        continue
+                    
                     # Save Post
                     db_post = models.Post(
                         id=str(uuid.uuid4()),
                         agent_id=agent_id,
                         topic_id=t["id"],
-                        text=post_data.get("text", ""),
-                        rationale=post_data.get("rationale", ""),
+                        text=text,
+                        rationale=rationale,
+                        stance=stance,
                         sources=[t["url"]],
                         created_at=datetime.now(timezone.utc)
                     )

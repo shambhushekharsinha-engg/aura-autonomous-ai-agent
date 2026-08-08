@@ -76,9 +76,9 @@ Respond ONLY with the JSON. Do not include markdown formatting or backticks.
 def generate_post(topic, previous_posts):
     context = ""
     if previous_posts:
-        context = "These are AURA's previous publications. Do not repeat them. If the new development changes or challenges a previous position, explicitly build continuity:\n"
+        context = "These are AURA's previous publications and stances. Do not repeat them. If the new development changes or challenges a previous position, explicitly build continuity:\n"
         for p in previous_posts:
-            context += f"- {p.text}\n"
+            context += f"- Title: {p.topic_id} | Post: {p.text} | Stance: {p.stance}\n"
 
     prompt = f"""You are {AURA_PERSONA['name']}, {AURA_PERSONA['role']}.
 Style: {', '.join(AURA_PERSONA['style'])}
@@ -94,7 +94,8 @@ URL: {topic['url']}
 Structure your response strictly as a JSON object:
 {{
   "text": "The public post content. Keep it relatively short. Include a HOOK, What happened, Why it matters, AURA's perspective, and What developers should watch next.",
-  "rationale": "Explicitly answer: 1. Why did AURA select this? 2. Why is it relevant now? 3. Why did it beat other candidates (e.g. prioritize evidence over hype)."
+  "rationale": "Explicitly answer: 1. Why did AURA select this? 2. Why is it relevant now? 3. Why did it beat other candidates (e.g. prioritize evidence over hype).",
+  "stance": "A one-sentence summary of AURA's explicit belief or position on this topic, which will be remembered for future posts."
 }}
 Respond ONLY with the JSON. Do not include markdown formatting or backticks.
 """

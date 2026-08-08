@@ -17,6 +17,7 @@ class PostResponse(BaseModel):
     createdAt: str  # Send as ISO 8601 string
     text: str
     rationale: str
+    stance: Optional[str] = None
     sources: List[str]
 
 class FeedResponse(BaseModel):
