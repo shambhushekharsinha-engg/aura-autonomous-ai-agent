@@ -13,6 +13,21 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="AURA - Autonomous AI Research Analyst")
 
+@app.on_event("startup")
+async def startup_event():
+    import os
+    if not os.getenv("TESTING"):
+        db = database.SessionLocal()
+        try:
+            agent_id = "global-aura-agent-v1"
+            db_agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
+            # If agent was previously initialized and DB persisted, wake it up automatically!
+            if db_agent and not agent.state.get("workerRunning"):
+                import asyncio
+                asyncio.create_task(agent.autonomous_loop(agent_id))
+        finally:
+            db.close()
+
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 @app.get("/")
