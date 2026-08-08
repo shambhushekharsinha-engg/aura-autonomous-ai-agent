@@ -139,6 +139,14 @@ async function fetchData() {
             fetch(`/api/agent/feed?agentId=${agentId}`)
         ]);
         
+        if (decRes.status === 404 || feedRes.status === 404) {
+            console.log("Agent not found in DB. Re-initializing...");
+            localStorage.removeItem('auraAgentId');
+            agentId = null;
+            initAgent();
+            return;
+        }
+        
         if (healthRes.ok) updateHealth(await healthRes.json());
         if (decRes.ok) renderDecisions((await decRes.json()).decisions);
         if (feedRes.ok) renderFeed((await feedRes.json()).posts);
