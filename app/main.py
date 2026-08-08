@@ -83,3 +83,40 @@ def get_stats(agentId: str, db: Session = Depends(database.get_db)):
         "rejected": rejected,
         "status": "autonomous"
     }
+
+@app.get("/api/agent/decisions", response_model=schemas.DecisionsResponse)
+def get_decisions(agentId: str, db: Session = Depends(database.get_db)):
+    topics = db.query(models.Topic).order_by(models.Topic.discovered_at.desc()).limit(15).all()
+    
+    decisions = []
+    for t in topics:
+        decisions.append({
+            "topic": t.title,
+            "decision": t.decision if t.decision else "REJECT",
+            "score": t.score if t.score else 0.0,
+            "reason": t.rejection_reason,
+            "createdAt": t.discovered_at.isoformat() if t.discovered_at else ""
+        })
+    return {"decisions": decisions}
+
+@app.get("/api/agent/health", response_model=schemas.HealthResponse)
+def get_health(db: Session = Depends(database.get_db)):
+    discovered = db.query(models.Topic).count()
+    rejected = db.query(models.Topic).filter(models.Topic.decision != "PUBLISH").count()
+    published = db.query(models.Post).count()
+    
+    status = "error" if agent.state.get("lastError") else "healthy"
+    if not agent.state.get("workerRunning"):
+        status = "offline"
+        
+    return {
+        "status": status,
+        "autonomous": True,
+        "workerRunning": agent.state.get("workerRunning", False),
+        "lastCycleAt": agent.state.get("lastCycleAt"),
+        "nextCycleAt": agent.state.get("nextCycleAt"),
+        "cyclesCompleted": agent.state.get("cyclesCompleted", 0),
+        "topicsDiscovered": discovered,
+        "topicsRejected": rejected,
+        "postsPublished": published
+    }
