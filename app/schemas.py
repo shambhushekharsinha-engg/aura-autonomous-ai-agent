@@ -27,4 +27,25 @@ class StatsResponse(BaseModel):
     discovered: int
     published: int
     rejected: int
+
+class DecisionModel(BaseModel):
+    topic: str
+    decision: str
+    score: float
+    reason: Optional[str] = None
+    createdAt: str
+
+class DecisionsResponse(BaseModel):
+    decisions: List[DecisionModel]
+
+class HealthResponse(BaseModel):
     status: str
+    autonomous: bool
+    workerRunning: bool
+    lastCycleAt: Optional[str] = None
+    nextCycleAt: Optional[str] = None
+    cyclesCompleted: int
+    topicsDiscovered: int
+    topicsRejected: int
+    postsPublished: int
+
