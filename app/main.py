@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Depends, BackgroundTasks, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 import uuid
 import asyncio
@@ -10,6 +12,12 @@ from .database import engine
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="AURA - Autonomous AI Research Analyst")
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+@app.get("/")
+def read_index():
+    return FileResponse('app/static/index.html')
 
 @app.post("/api/agent/init", response_model=schemas.InitResponse)
 def init_agent(req: schemas.InitRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
@@ -51,3 +59,20 @@ def get_feed(agentId: str, db: Session = Depends(database.get_db)):
         })
         
     return {"posts": feed_posts}
+
+@app.get("/api/agent/stats", response_model=schemas.StatsResponse)
+def get_stats(agentId: str, db: Session = Depends(database.get_db)):
+    db_agent = db.query(models.Agent).filter(models.Agent.id == agentId).first()
+    if not db_agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+        
+    discovered = db.query(models.Topic).count()
+    published = db.query(models.Post).filter(models.Post.agent_id == agentId).count()
+    rejected = db.query(models.Topic).filter(models.Topic.decision != "PUBLISH").count()
+    
+    return {
+        "discovered": discovered,
+        "published": published,
+        "rejected": rejected,
+        "status": "autonomous"
+    }

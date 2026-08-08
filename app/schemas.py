@@ -22,3 +22,9 @@ class PostResponse(BaseModel):
 
 class FeedResponse(BaseModel):
     posts: List[PostResponse]
+
+class StatsResponse(BaseModel):
+    discovered: int
+    published: int
+    rejected: int
+    status: str

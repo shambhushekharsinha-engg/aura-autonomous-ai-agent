@@ -1,0 +1,118 @@
+:root {
+    --bg-dark: #0a0a0f;
+    --panel-bg: rgba(20, 20, 25, 0.7);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --text-main: #f0f0f0;
+    --text-muted: #8a8a93;
+    --accent: #00ffcc;
+    --accent-glow: rgba(0, 255, 204, 0.2);
+    --reject: #ff3366;
+    --font-sans: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    background-image: 
+        radial-gradient(circle at 15% 50%, rgba(0, 255, 204, 0.03), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(255, 51, 102, 0.03), transparent 25%);
+    min-height: 100vh;
+}
+
+.container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+/* Header & Glassmorphism */
+.dashboard-header {
+    background: var(--panel-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1.5rem;
+}
+
+h1 { font-family: var(--font-mono); font-size: 2.5rem; letter-spacing: 2px; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); margin-bottom: 0.5rem; }
+.subtitle { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
+.philosophy { font-size: 0.9rem; font-style: italic; color: var(--text-muted); margin-top: 0.5rem; }
+
+/* Status Indicator */
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(0, 255, 204, 0.1);
+    border: 1px solid rgba(0, 255, 204, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.pulse-dot {
+    width: 8px; height: 8px;
+    background-color: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 204, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(0, 255, 204, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 204, 0); }
+}
+
+/* Stats */
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.stat-card {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+}
+.stat-label { display: block; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; letter-spacing: 1px; }
+.stat-value { display: block; font-size: 2rem; font-weight: 700; font-family: var(--font-mono); color: var(--text-main); }
+
+/* Feed Section */
+.feed-section h2 { font-family: var(--font-mono); font-size: 1rem; color: var(--text-muted); letter-spacing: 2px; margin-bottom: 1rem; }
+.feed-container { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.post-card {
+    background: var(--panel-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.post-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); }
+.post-meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem; }
+.post-text { font-size: 1.05rem; margin-bottom: 1.5rem; line-height: 1.7; white-space: pre-wrap; }
+
+.post-section-title { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; letter-spacing: 1px; }
+.post-stance, .post-rationale { font-size: 0.9rem; padding: 0.75rem; background: rgba(0,0,0,0.3); border-radius: 6px; margin-bottom: 1rem; border-left: 2px solid var(--text-muted); }
+.post-sources { margin-top: 1rem; font-family: var(--font-mono); font-size: 0.8rem; }
+.post-sources a { color: var(--accent); text-decoration: none; margin-right: 1rem; }
+.post-sources a:hover { text-decoration: underline; }
+
+.loading-state { text-align: center; color: var(--text-muted); font-family: var(--font-mono); padding: 3rem; }
