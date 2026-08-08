@@ -98,17 +98,54 @@ Respond ONLY with the JSON. Do not include markdown formatting or backticks.
 def generate_post(topic, previous_posts):
     if os.getenv("MOCK_LLM") == "1":
         title = topic['title']
-        memory_str = "Builds on AURA's continuous analysis of autonomous AI systems."
+        t_low = title.lower()
         
-        # Connect to actual previous stance
+        # 1. Theme Classification & Framework
+        if any(w in t_low for w in ["security", "cve", "vulnerability", "attack", "hack", "bypass"]):
+            theme = "Security"
+            framework_analysis = f"The attack surface highlighted by '{title}' exposes critical gaps in current infrastructure. The primary consequence isn't just the immediate vulnerability, but the systemic risk when mitigations lag behind discovery."
+            framework_stance = f"Security mitigations for '{title[:30]}...' must move from reactive patching to structural infrastructure isolation."
+            framework_rationale = "Selected because it provides concrete evidence of expanding attack surfaces requiring fundamental mitigation."
+        elif any(w in t_low for w in ["model", "benchmark", "sota", "gpt", "claude", "llama", "parameter"]):
+            theme = "Models"
+            framework_analysis = f"While '{title}' demonstrates improvements on standard benchmarks, the raw evaluation quality often masks underlying weaknesses. Reproducibility and practical significance matter far more than incremental capability gains on saturated tests."
+            framework_stance = f"For '{title[:30]}...', benchmark gains matter less than deployment reproducibility."
+            framework_rationale = "Selected to contextualize incremental model updates against actual practical engineering value."
+        elif any(w in t_low for w in ["agent", "autonomous", "bot", "auto"]):
+            theme = "Agents"
+            framework_analysis = f"The agent behavior observed in '{title}' illustrates a critical shift in infrastructure implications. As systems scale autonomously, traditional human-centric safeguards fail, requiring agent-aware rate limiting and identity verification."
+            framework_stance = f"Autonomous interactions in '{title[:30]}...' prove infrastructure needs strict machine-readable safeguards."
+            framework_rationale = "Selected because it highlights systemic infrastructure implications of autonomous behaviors."
+        elif any(w in t_low for w in ["open source", "github", "oss", "repo", "license"]):
+            theme = "Open Source"
+            framework_analysis = f"The ecosystem impact of '{title}' raises immediate questions about maintainability. Developer consequences often diverge from initial hype, and true value depends entirely on community governance and long-term viability."
+            framework_stance = f"The true impact of '{title[:30]}...' relies entirely on long-term community maintainability."
+            framework_rationale = "Selected because it affects open-source ecosystem governance and developer maintainability."
+        elif any(w in t_low for w in ["chip", "gpu", "nvidia", "hardware", "compute", "tpu"]):
+            theme = "Hardware"
+            framework_analysis = f"The underlying compute constraints exposed by '{title}' dictate the economics of modern deployment. Developer impact is downstream of these hardware realities, shifting optimization from software to fundamental infrastructure."
+            framework_stance = f"Hardware economics in '{title[:30]}...' dictate downstream developer constraints."
+            framework_rationale = "Selected because compute economics fundamentally constrain software deployment."
+        else:
+            theme = "General AI"
+            framework_analysis = f"The technical changes introduced by '{title}' lack immediate second-order consequences without deeper evidence. However, tracking this vector is necessary to understand how the broader ecosystem adapts to incremental shifts."
+            framework_stance = f"The technical shifts in '{title[:30]}...' require further evidence before confirming second-order consequences."
+            framework_rationale = "Selected to track macro-technical shifts across the ecosystem."
+
+        # 2. Previous Memory Context
+        memory_str = ""
         if previous_posts and previous_posts[0].stance:
-            prev_stance = previous_posts[0].stance
-            memory_str = f"Consistent with AURA's previous observation: '{prev_stance}' This new development validates our architectural thesis."
-            
+            prev = previous_posts[0].stance
+            memory_str = f"\n\n**Memory Context:** This reinforces an earlier pattern AURA identified: '{prev}'. The continuity suggests a hardening trend."
+
+        # 3. Assemble Post
+        text = f"**Analysis: {title}**\n\n{framework_analysis}{memory_str}"
+        rationale = f"1. {framework_rationale}\n2. Matches AURA's {theme} domain focus.\nSource: {topic.get('source', 'arXiv/HN')}"
+        
         return {
-            "text": f"**Analysis: {title}**\n\nThe latest developments here illustrate a critical shift in AI infrastructure. As autonomous systems scale, they create unexpected operational risks and require strict machine-readable interaction policies.\n\nThe interesting lesson isn't just the raw capability of the model—it's the pressing need for rate limits, cryptographic identity verification, and deterministic sandboxing in agentic loops. As AI agents move from merely generating text to taking consequential actions on live databases, infrastructure designed around human behavior will increasingly need an agent-aware security layer.",
-            "rationale": f"1. Selected because it highlights systemic infrastructure challenges rather than just incremental model updates.\n2. Relevant now due to the accelerating deployment of autonomous agents.\n3. Chosen over alternatives because it provides measurable evidence of how AI agents interact with real-world systems, matching AURA's focus on consequential engineering changes.\nSource: {topic.get('source', 'arXiv/HN')}",
-            "stance": f"When autonomous agents interact with '{title[:30]}...', infrastructure must shift from human-first to agent-aware security policies."
+            "text": text,
+            "rationale": rationale,
+            "stance": framework_stance
         }
     context = ""
     if previous_posts:
