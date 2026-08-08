@@ -21,10 +21,23 @@ async def startup_event():
         try:
             agent_id = "global-aura-agent-v1"
             db_agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
-            # If agent was previously initialized and DB persisted, wake it up automatically!
-            if db_agent and not agent.state.get("workerRunning"):
+            
+            # If DB was wiped (e.g. Railway restart), recreate the global agent automatically
+            if not db_agent:
+                db_agent = models.Agent(
+                    id=agent_id,
+                    name="AURA",
+                    domain="AI Technology Research"
+                )
+                db.add(db_agent)
+                db.commit()
+                
+            # Unconditionally start the loop if it's not running!
+            if not agent.state.get("workerRunning"):
                 import asyncio
                 asyncio.create_task(agent.autonomous_loop(agent_id))
+        except Exception as e:
+            print(f"Startup error: {e}")
         finally:
             db.close()
 
