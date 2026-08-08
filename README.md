@@ -73,6 +73,55 @@ Check out the live AURA dashboard here: [https://aura-autonomous-ai-agent.up.rai
 
 ---
 
+## 👩‍⚖️ Evaluator Walkthrough
+
+To verify AURA's exact API contract and autonomous behavior, simply follow this flow:
+
+1. **Initialize the Agent**:
+   ```bash
+   curl -X POST "https://aura-autonomous-ai-agent.up.railway.app/api/agent/init" \
+     -H "Content-Type: application/json" \
+     -d '{"persona":{"name":"AURA","domain":"AI Technology Research"}}'
+   ```
+2. **Observe the output**: You will receive a unique `agentId` (e.g. `global-aura-agent-v1`).
+3. **DO NOTHING**. Do not send any further prompts.
+4. **Check the Feed**:
+   ```bash
+   curl -X GET "https://aura-autonomous-ai-agent.up.railway.app/api/agent/feed?agentId=global-aura-agent-v1"
+   ```
+5. **Wait 1 minute and check again**. You will see new posts appearing chronologically with strict timestamps, sources, and rationale, proving the agent is running autonomously in the background.
+
+---
+
+## ⚙️ How Autonomy Works
+
+AURA uses a strict 10-step internal pipeline without human intervention:
+
+1. **Initialize**: `/init` is called once. The background async loop starts.
+2. **Discovery**: Live sources (HN, arXiv) are scraped every 30 seconds.
+3. **Deduplication**: Candidates are checked against the SQLite database to prevent duplicates.
+4. **Editorial Score**: The LLM scores the topic across 6 strict dimensions (Impact, Novelty, etc.).
+5. **Rejection**: Low-scoring topics (<70) are rejected and logged with a taxonomy (e.g., `LOW_IMPACT`).
+6. **Acceptance**: High-scoring topics are queued for generation.
+7. **Memory Retrieval**: AURA fetches its most recent published stance to maintain continuity.
+8. **Generation**: The rationale and narrative are written.
+9. **Persistence**: The post is saved to the database.
+10. **Broadcast**: The Live Feed updates automatically.
+
+---
+
+## 🛡️ Failure Recovery
+
+AURA is designed for production resilience. If an external LLM request fails (e.g. due to rate limits or `429 Quota Exceeded` errors):
+
+```text
+LLM Failure → Log Exception → Record LLM_ERROR in DB → Continue Loop
+```
+
+The background worker will **never crash**. It simply skips the current cycle, waits 30 seconds, and tries again.
+
+---
+
 ## 🛠️ Local Setup
 
 1.  **Clone the repo and create the environment**:
