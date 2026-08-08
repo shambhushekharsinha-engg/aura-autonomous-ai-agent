@@ -21,20 +21,25 @@ def read_index():
 
 @app.post("/api/agent/init", response_model=schemas.InitResponse)
 async def init_agent(req: schemas.InitRequest, db: Session = Depends(database.get_db)):
-    # Create the agent in DB
-    agent_id = str(uuid.uuid4())
-    db_agent = models.Agent(
-        id=agent_id,
-        name=req.persona.name,
-        domain=req.persona.domain
-    )
-    db.add(db_agent)
-    db.commit()
+    agent_id = "global-aura-agent-v1"
     
-    # Start the autonomous loop in the background unless testing
-    import os
-    if not os.getenv("TESTING"):
-        asyncio.create_task(agent.autonomous_loop(agent_id))
+    # Check if global agent already exists
+    db_agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
+    
+    if not db_agent:
+        # Create the global agent in DB
+        db_agent = models.Agent(
+            id=agent_id,
+            name=req.persona.name,
+            domain=req.persona.domain
+        )
+        db.add(db_agent)
+        db.commit()
+        
+        # Start the autonomous loop only once
+        import os
+        if not os.getenv("TESTING"):
+            asyncio.create_task(agent.autonomous_loop(agent_id))
     
     return {"agentId": agent_id}
 
