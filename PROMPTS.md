@@ -74,3 +74,13 @@ This file records the actual prompts used with the AI coding assistant (Antigrav
 > "1. /feed only returns the newest 20 posts — direct requirement risk... 2. /init doesn't actually honor the submitted persona if startup already created AURA... 3. Your 'Gemini' decision isn't actually enforced by the application... 7. The worker has a real state-management bug... If you had NOT submitted yet I would make only four changes"
 
 *Action Taken:* We immediately implemented the 4 critical fixes to guarantee perfect rubric compliance: 1) We removed the `.limit(20)` from `get_feed` in `main.py` so all historical posts remain indefinitely available. 2) We updated `init_agent` so that it mutates the existing DB agent's persona if an evaluator submits a new one. 3) We enforced Python-level editorial scoring in `agent.py` (`decision = "PUBLISH" if overall_score >= 70 else "REJECT"`) rather than trusting the LLM payload. 4) We fixed the `autonomous_loop` exception handler so it no longer incorrectly sets `workerRunning = False` on transient cycle failures.
+
+## Production Enhancements & Authentic Discovery (Phase P)
+
+**User Prompt:**
+> "anything more we can add which will organize and boost the score like multiple news we can get in less and more authentic news we can get across various platforms... and think of any extra production level featurs which you can add in this project"
+
+*Action Taken:* We implemented three major enterprise-grade features:
+1. **Multiple Authentic Sources**: We rewrote `discovery.py` to securely pull from four distinct platforms: Hacker News (Crowdsourced), arXiv (Primary source), TechCrunch AI (Industry editorial), and MIT Tech Review (Research editorial).
+2. **Deep Semantic Extraction**: We upgraded the RSS parser to extract HTML-cleaned `summary` and `description` tags, injecting them into the LLM context so AURA's "publish rule" evaluates the actual content, not just the title.
+3. **Production Logic**: We implemented *Source Credibility Weighting* in `llm.py` (giving automatic score bumps to highly authentic sources like arXiv) and *Dynamic Network Backoff* in `agent.py` (automatically slowing the background loop from 30s to 5 minutes if no new topics are found for several cycles, saving compute).

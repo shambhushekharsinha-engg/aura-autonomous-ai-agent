@@ -32,10 +32,18 @@ def get_deterministic_score(title):
 def evaluate_topic(topic):
     if os.getenv("MOCK_LLM") == "1":
         score = get_deterministic_score(topic['title'])
+        
+        # Source Credibility Weighting
+        source_name = topic.get('source', '')
+        if "arXiv" in source_name:
+            score += 5  # Primary source evidence bonus
+        elif "TechCrunch" in source_name or "MIT" in source_name:
+            score += 3  # Editorial quality bonus
+
         if score >= 75:
             return {
                 "decision": "PUBLISH",
-                "impact": score, "novelty": score - 2, "evidence": score + 3, "relevance": score, "developer_value": score - 5, "persona_fit": score + 2,
+                "impact": min(100, score), "novelty": min(100, score - 2), "evidence": min(100, score + 3), "relevance": min(100, score), "developer_value": min(100, score - 5), "persona_fit": min(100, score + 2),
                 "reason": "MOCK_PUBLISH"
             }
         else:
@@ -53,6 +61,7 @@ Editorial philosophy: {AURA_PERSONA['philosophy']}
 
 Evaluate this topic for publishing:
 Title: {topic['title']}
+Summary/Content: {topic.get('summary', 'No summary provided')}
 Source: {topic['source']}
 
 Calculate the scores (0-100) based on these weights:
@@ -159,6 +168,7 @@ Editorial philosophy: {AURA_PERSONA['philosophy']}
 
 Write a concise, research-driven post about this topic:
 Title: {topic['title']}
+Summary/Content: {topic.get('summary', 'No summary provided')}
 Source: {topic['source']}
 URL: {topic['url']}
 

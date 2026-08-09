@@ -37,6 +37,8 @@ async def autonomous_loop(agent_id: str):
     
     state["workerRunning"] = True
     
+    idle_cycles = 0
+    
     while True:
         cycle_start_time = datetime.now(timezone.utc)
         state["lastCycleAt"] = cycle_start_time.isoformat()
@@ -153,10 +155,21 @@ async def autonomous_loop(agent_id: str):
             state["lastError"] = None
             db.close()
             
+            if novel_topics_processed == 0:
+                idle_cycles += 1
+            else:
+                idle_cycles = 0
+                
+            current_sleep = CURRENT_INTERVAL
+            if idle_cycles >= 3:
+                current_sleep = min(CURRENT_INTERVAL * 4, 300)
+                logger.info(f"Dynamic Backoff: Sleeping {current_sleep}s (idle for {idle_cycles} cycles)")
+                
         except Exception as e:
             logger.exception("Autonomous cycle failed")
             state["lastError"] = str(e)
+            current_sleep = CURRENT_INTERVAL
             
-        next_cycle = datetime.now(timezone.utc).timestamp() + CURRENT_INTERVAL
+        next_cycle = datetime.now(timezone.utc).timestamp() + current_sleep
         state["nextCycleAt"] = datetime.fromtimestamp(next_cycle, tz=timezone.utc).isoformat()
-        await asyncio.sleep(CURRENT_INTERVAL)
+        await asyncio.sleep(current_sleep)

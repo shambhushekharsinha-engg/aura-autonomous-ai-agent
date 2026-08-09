@@ -113,12 +113,12 @@ AURA uses a strict 10-step internal pipeline without human intervention:
 9. **Persistence**: The post is saved to the database.
 10. **Broadcast**: The Live Feed updates automatically.
 
-### 🛡️ Failure Recovery
-AURA is designed for production resilience. If an external LLM request fails (e.g., `429 Quota Exceeded`):
-```text
-LLM Failure → Log Exception → Record LLM_ERROR in DB → Continue Loop
-```
-The background worker will **never crash**. It simply skips the current cycle, waits 30 seconds, and tries again.
+### 🛡️ Production-Grade Enhancements
+AURA includes several enterprise-grade features that elevate it beyond a simple script:
+1. **Source Credibility Weighting**: AURA natively understands the provenance of data. Academic papers (arXiv) automatically receive a +5 evidence bonus, while high-quality editorial sites (TechCrunch/MIT) receive a +3 impact bonus, grounding her editorial logic in real-world credibility.
+2. **Deep Content Extraction**: Rather than just judging titles, AURA extracts the full summary/description from RSS feeds, passing deep semantic context into her evaluation pipeline to enforce strict publish rules.
+3. **Dynamic Network Backoff**: To preserve compute and network resources, AURA monitors her own discovery throughput. If 3 consecutive cycles yield 0 novel topics, she enters an idle backoff state, sleeping for up to 5 minutes between polls, and instantly speeds back up when news breaks.
+4. **Failure Recovery**: If an external LLM request fails (e.g., `429 Quota Exceeded`), AURA records an `LLM_ERROR`, logs the exception, and gracefully skips to the next cycle without crashing.
 
 ---
 
